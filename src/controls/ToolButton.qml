@@ -41,6 +41,11 @@ ToolButton
         font: control.font
         color: control.iconColor
     }
+    background: ToolButton
+    {
+        onClicked: control.clicked()
+        // other on...
+    }
 
     SequentialAnimation
     {
@@ -56,8 +61,8 @@ ToolButton
         }
     }
     
-    ToolTip.delay: 1000
+    ToolTip.delay: 500
     ToolTip.timeout: 5000
-    ToolTip.visible: hovered && !isMobile
+    ToolTip.visible: hovered && !isMobile && tooltipText !== ""
     ToolTip.text: tooltipText
 }

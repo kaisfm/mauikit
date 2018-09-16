@@ -56,7 +56,7 @@ ToolButton
         }
     }
     
-    ToolTip.delay: 500
+    ToolTip.delay: 1000
     ToolTip.timeout: 5000
     ToolTip.visible: hovered && !isMobile && tooltipText.length > 0
     ToolTip.text: tooltipText

@@ -3,18 +3,15 @@
 pkgname=mauikit
 pkgver=git
 pkgrel=0
-pkgdesc='Tiny Qt Music Player to keep your favorite songs at hand'
+pkgdesc='Multi-Adaptable UserInterfaces for Linux and Android Apps(Kit for developing MAUI Apps).'
 arch=(x86_64)
-url='https://vvave.kde.org/'
+url='https://mauikit.org/'
 license=(GPL3)
 depends=(ki18n knotifications qt5-webengine qt5-websockets taglib)
 makedepends=(git python)
-#optdepends=('youtube-dl: youtube support')
 provides=("${pkgname%-*}")
-conflicts=("${pkgname%-*}" 'babe-qt')
-replaces=('babe-qt')
-#source=('git+git://anongit.kde.org/mauikit.git')
-source=(mauikit-git.zip)
+conflicts=("${pkgname%-*}")
+source=('git+git://anongit.kde.org/mauikit.git')
 sha256sums=('SKIP')
 
 #pkgver() {
@@ -27,7 +24,7 @@ prepare() {
 
 build() {
   cd build
-  cmake ../$pkgname-$pkgver -DCMAKE_INSTALL_PREFIX=/usr
+  cmake ../$pkgname -DCMAKE_INSTALL_PREFIX=/usr
   make
 }
  

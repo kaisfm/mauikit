@@ -1,9 +1,9 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: mauikit-git
-Source: <url://example.com>
+Source: https://github.com/mauikit/mauikit
 
 Files: *
-Copyright: <years> <put author's name and email here>
+Copyright: 2018 Camilo higuita
            <years> <likewise for another author>
 License: GPL-3.0+
 

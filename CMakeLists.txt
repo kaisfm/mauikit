@@ -79,11 +79,16 @@ set(tagging_HDRS
 
 #use dbus on linux, bsd etc, but not andoid and apple stuff
 if(ANDROID)
-    find_package(Qt5 REQUIRED COMPONENTS AndroidExtras)
+    find_package(Qt5 REQUIRED COMPONENTS AndroidExtras Xml)
     set(mauikit_Android Qt5::AndroidExtras)
     set(mauikit_Android_SRCS
         src/android/mauiandroid.h
         src/android/mauiandroid.cpp
+        )
+        
+    set(MAUIANDROID_LIBS
+        Qt5::Xml
+        Qt5::AndroidExtras
         )
 else()
     find_package(KF5 ${KF5_VERSION} REQUIRED COMPONENTS I18n Notifications 
@@ -108,8 +113,7 @@ Config Service KIO ConfigWidgets)
         KF5::Service
         KF5::KIONTLM
         KF5::ConfigWidgets
-        )
-        
+        )        
         
     set(mauikit_KDE KF5::ConfigCore KF5::Notifications KF5::I18n KF5::Service 
 KF5::KIOCore KF5::KIOWidgets KF5::KIOFileWidgets KF5::KIONTLM)
@@ -161,6 +165,7 @@ target_link_libraries(MauiKit
     Qt5::Svg
     Qt5::Gui
     ${MAUIKDE_KF5LIBS}
+    ${MAUIANDROID_LIBS}
     )
     
 generate_export_header(MauiKit BASE_NAME MauiKit)
@@ -195,7 +200,9 @@ install(FILES
             ${CMAKE_CURRENT_BINARY_DIR}/mauikit_export.h
         DESTINATION ${KDE_INSTALL_INCLUDEDIR}/MauiKit
         COMPONENT Devel)
-   
+        
+##INSTALL MAUI STYLE
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/maui-style DESTINATION ${KDE_INSTALL_QMLDIR}/QtQuick/Controls.2)   
    
 ##CMAKE PARTS   
    

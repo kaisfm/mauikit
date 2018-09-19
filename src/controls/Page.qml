@@ -102,39 +102,21 @@ QQC2.Page
             background: Rectangle
             {
                 id: headBarBG
-                property alias border : headBarBorder.color
                 color: viewBackgroundColor
-                implicitHeight: toolBarHeightAlt
-                
-                Kirigami.Separator
-                {
-                    id: headBarBorder
-                    color:  Qt.tint(Kirigami.Theme.textColor, 
-Qt.rgba(headBarBG.color.r, headBarBG.color.g, headBarBG.color.b, 0.7))
-                    
-                    anchors
-                    {
-                        left: parent.left
-                        right: parent.right
-                        bottom: altToolBars ? undefined : parent.bottom
-                        top: altToolBars ? parent.top : undefined
-                    }
-                }
-
+                implicitHeight: toolBarHeightAlt                
+              
                 layer.enabled: dropShadow
                 layer.effect: DropShadow
                 {
                     anchors.fill: headBarBG
                     horizontalOffset: 0
-                    verticalOffset: altToolBars ? -1 : 1
+                    verticalOffset:  unit * (altToolBars ? -1 : 1)
                     radius: 8
                     samples: 25
                     color: Qt.darker(headBarBG.color , 1.4)
                     source: headBarBG
                 }
             }
-
-
         }
 
         Item
@@ -204,12 +186,11 @@ Qt.rgba(headBarBG.color.r, headBarBG.color.g, headBarBG.color.b, 0.7))
 
             readonly property int _margins : footBarMargins
 
-
+           implicitHeight: floatingBar ? toolBarHeightAlt : toolBarHeight
             height: implicitHeight
-            implicitHeight: toolBarHeight * (floatingBar ? 0.8 : 1)
-
-            Layout.leftMargin: footBarAligment === Qt.AlignLeft ? _margins : space.small
-            Layout.rightMargin: footBarAligment === Qt.AlignRight ? _margins : space.small
+            width: floatingBar ?  implicitWidth : parent.width
+            Layout.leftMargin: footBarAligment === Qt.AlignLeft ? _margins : (floatingBar ? space.small : 0)
+            Layout.rightMargin: footBarAligment === Qt.AlignRight ? _margins : (floatingBar ? space.small : 0)
             Layout.bottomMargin: floatingBar ? _margins : 0
             Layout.alignment: footBarAligment
             Layout.fillWidth: true
@@ -225,33 +206,22 @@ Qt.rgba(headBarBG.color.r, headBarBG.color.g, headBarBG.color.b, 0.7))
             background: Rectangle
             {
                 id: footBarBg
-                height: toolBarHeight * (floatingBar? 0.8 : 1)
+                height: bottomToolBar.implicitHeight
                 color: floatingBar ? accentColor : viewBackgroundColor
-                radius: floatingBar ? unit*6 : 0
+                radius: floatingBar ? unit * 6 : 0
                 border.color: floatingBar ? Qt.darker(accentColor, 1.2) : "transparent"
-                layer.enabled: floatingBar
+                layer.enabled: dropShadow
                 layer.effect: DropShadow
                 {
                     anchors.fill: footBarBg
                     horizontalOffset: 0
-                    verticalOffset: 3
+                    verticalOffset: unit * (floatingBar ? 2 : -1)
                     radius: 8
                     samples: 25
-                    color: Qt.darker(accentColor, 1.4)
+                    color: Qt.darker(floatingBar ? accentColor : backgroundColor, 1.4) 
                     source: footBarBg
                 }
 
-                Kirigami.Separator
-                {
-                    visible: !floatingBar
-                    color: borderColor
-                    anchors
-                    {
-                        left: parent.left
-                        right: parent.right
-                        top: parent.top
-                    }
-                }
             }
         }
     }

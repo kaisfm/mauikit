@@ -39,7 +39,7 @@ Kirigami.AbstractApplicationWindow
     /*********************** UI ***********************/
     /*************************************************/
 
-    property bool isWide : root.width >= Kirigami.Units.gridUnit * 50
+    property bool isWide : root.width >= Kirigami.Units.gridUnit * 30 || pageStack.wideMode
 
     property int iconSize : iconSizes.medium * (isMobile ? 0.95 : 1)
 
@@ -67,7 +67,7 @@ Kirigami.AbstractApplicationWindow
                                             Dark: 3
                                         })
 
-    property color borderColor: Maui.Style.borderColor
+    property color borderColor: Qt.tint(textColor, Qt.rgba(backgroundColor.r, backgroundColor.g, backgroundColor.b, 0.7))
     property color backgroundColor: Maui.Style.backgroundColor
     property color textColor: Maui.Style.textColor
     property color highlightColor: Maui.Style.highlightColor
@@ -99,8 +99,8 @@ Kirigami.AbstractApplicationWindow
 
     Material.theme: Material.Light
     Material.accent: highlightColor
-    Material.background: viewBackgroundColor
-    Material.primary: backgroundColor
+    Material.background: headBarBGColor
+    Material.primary: headBarBG
     Material.foreground: textColor
 
     /***************************************************/
@@ -143,16 +143,18 @@ Kirigami.AbstractApplicationWindow
 
     onHeadBarBGColorChanged: 
     {
-        if(!isAndroid && !isMobile && colorSchemeName.length > 0)
+        if(!isAndroid && !isMobile && colorSchemeName.length > 0 && !altToolBars)
             Maui.KDE.setColorScheme(colorSchemeName, headBarBGColor, headBarFGColor)
-        else if(isAndroid)
+        else if(isAndroid && !altToolBars)
             Maui.Android.statusbarColor(headBarBGColor, false)
     }
     
     onHeadBarFGColorChanged: 
     {
-        if(!isAndroid && !isMobile && colorSchemeName.length > 0)
+        if(!isAndroid && !isMobile && colorSchemeName.length > 0 && !altToolBars)
             Maui.KDE.setColorScheme(colorSchemeName, headBarBGColor, headBarFGColor)
+        else if(isAndroid && !altToolBars)
+            Maui.Android.statusbarColor(headBarBGColor, false)
     }
     
     background: Rectangle
@@ -183,6 +185,7 @@ Kirigami.AbstractApplicationWindow
         }
 
         headBarBG.color: headBarBGColor
+        headBar.fgColor: headBarFGColor
 
         headBar.leftContent: Maui.ToolButton
         {
@@ -275,10 +278,10 @@ Kirigami.AbstractApplicationWindow
 //        bg: pageStack
     }
 
-//     Component.onCompleted:
-//     {
-//         if(isAndroid) Maui.Android.statusbarColor(backgroundColor, true)
-//     }
+     Component.onCompleted:
+     {
+         if(isAndroid && altToolBars) Maui.Android.statusbarColor(backgroundColor, true)
+     }
 
     function switchColorScheme(variant)
     {

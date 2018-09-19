@@ -17,7 +17,7 @@ ToolBar
     property alias layout : layout
     property int margins: space.medium
     property int count : leftContent.length + middleContent.length + rightContent.length
-    
+    property color fgColor : textColor
     property alias leftContent : leftRowContent.data
     property alias middleContent : middleRowContent.data
     property alias rightContent : rightRowContent.data
@@ -32,7 +32,7 @@ ToolBar
         height: iconSizes.tiny
         visible: !mainFlickable.atXEnd && mainFlickable.interactive
         rotation: 270
-        opacity: 0.25
+        opacity: 0.2
         anchors 
         {
             top: parent.top
@@ -51,7 +51,7 @@ ToolBar
             GradientStop 
             {
                 position: 1.0
-                color: textColor
+                color: fgColor
             }
         }
         
@@ -63,7 +63,7 @@ ToolBar
         height: iconSizes.tiny
         visible: !mainFlickable.atXBeginning && mainFlickable.interactive
         rotation: 270
-        opacity: 0.25
+        opacity: 0.2
         anchors 
         {
             top: parent.top
@@ -77,7 +77,7 @@ ToolBar
             GradientStop
             {
                 position: 0.0
-                color: textColor
+                color: fgColor
             }
             
             GradientStop
@@ -124,8 +124,30 @@ ToolBar
                 Layout.topMargin: space.big
                 Layout.bottomMargin: space.big
                 width: unit
-                opacity: 0.4
+                opacity: 0.2
                 visible: leftContent.length > 0 && flickable.interactive
+                color: fgColor
+                
+                gradient: Gradient
+                {
+                    GradientStop
+                    {
+                        position: 0.0
+                        color: "transparent"
+                    }
+                    GradientStop 
+                    {
+                        position: 0.5
+                        color: fgColor
+                    }
+                    
+                    GradientStop 
+                    {
+                        position: 1.0
+                        color: "transparent"
+                    }
+                }
+                
             }
             
             Item
@@ -197,8 +219,30 @@ ToolBar
                 Layout.topMargin: space.big
                 Layout.bottomMargin: space.big
                 width: unit
-                opacity: 0.4
+                opacity: 0.2
                 visible: rightContent.length > 0 && flickable.interactive
+                color: fgColor
+                
+                gradient: Gradient
+                {
+                    GradientStop
+                    {
+                        position: 0.0
+                        color: "transparent"
+                    }
+                    GradientStop 
+                    {
+                        position: 0.5
+                        color: fgColor
+                    }
+                    
+                    GradientStop 
+                    {
+                        position: 1.0
+                        color: "transparent"
+                    }
+                }
+                
             }
             
             Row

@@ -66,7 +66,7 @@ QtObject
                                    })
 
     readonly property var iconSizes : ({
-                                           tiny : Kirigami.Units.iconSizes.small*0.3,
+                                           tiny : Kirigami.Units.iconSizes.small*0.5,
 
                                            small :  (isMobile ? Kirigami.Units.iconSizes.small*0.5:
                                                                                   Kirigami.Units.iconSizes.small),

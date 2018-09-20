@@ -31,7 +31,7 @@ private:
     QUrl componentUrl(const QString &fileName) const;
     QString resolveFilePath(const QString &path) const
     {
-#ifdef MAUI_APP
+#ifdef STATIC_MAUIKIT
         return QStringLiteral(":/org/kde/mauikit/") + path;
 #else
         return baseUrl().toLocalFile() + QLatin1Char('/') + path;
@@ -40,7 +40,7 @@ private:
     
     QString resolveFileUrl(const QString &filePath) const
     {
-#ifdef MAUI_APP
+#ifdef STATIC_MAUIKIT
         return filePath;
 #else
         return baseUrl().toString() + QLatin1Char('/') + filePath;

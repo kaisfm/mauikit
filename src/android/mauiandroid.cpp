@@ -6,6 +6,7 @@
 #include <QMimeDatabase>
 #include <QDomDocument>
 #include <QFile>
+
 #include "utils.h"
 
 class InterfaceConnFailedException : public QException
@@ -17,7 +18,7 @@ public:
 
 MAUIAndroid::MAUIAndroid(QObject *parent) : QObject(parent)
 {
-    
+
 }
 
 MAUIAndroid::~MAUIAndroid()
@@ -153,7 +154,7 @@ QString MAUIAndroid::sdDir()
         return "/mnt/";
 }
 
-void MAUIAndroid::setIcons(const QString &lowDPI, const QString &mediumDPI, const QString &highDPI)
+void MAUIAndroid::setAppIcons(const QString &lowDPI, const QString &mediumDPI, const QString &highDPI)
 {
     
     

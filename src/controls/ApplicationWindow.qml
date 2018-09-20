@@ -99,8 +99,8 @@ Kirigami.AbstractApplicationWindow
 
     Material.theme: Material.Light
     Material.accent: highlightColor
-    Material.background: headBarBGColor
-    Material.primary: headBarBG
+    Material.background: altToolBars ? backgroundColor : headBarBGColor 
+    Material.primary: headBarBGColor
     Material.foreground: textColor
 
     /***************************************************/

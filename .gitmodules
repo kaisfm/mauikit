@@ -1,0 +1,3 @@
+[submodule "src/android/icons/luv-icon-theme"]
+	path = src/android/icons/luv-icon-theme
+	url = https://github.com/Nitrux/luv-icon-theme.git

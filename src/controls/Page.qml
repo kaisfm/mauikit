@@ -40,6 +40,7 @@ QQC2.Page
     property alias headBar: topToolBar
     property alias footBar: bottomToolBar
     property alias headBarBG : headBarBG
+    property alias footBarItem: bottomToolBar.data
 
     property int footBarAligment : Qt.AlignCenter
 
@@ -191,8 +192,8 @@ QQC2.Page
                     width: container.width
                     height: contentIsRised ? container.height - (footBar.height + footBarMargins + space.big) :
                                              container.height
-                    y: contentIsRised ? flickable.contentY : 0
-
+                    y: contentIsRised ? flickable.contentY : 0                   
+                   
                 }
             }
         }
@@ -227,7 +228,7 @@ QQC2.Page
                 id: footBarBg
                 height: bottomToolBar.implicitHeight
                 color: floatingBar ? accentColor : viewBackgroundColor
-                radius: floatingBar ? unit * 6 : 0
+                radius: floatingBar ? radiusV : 0
                 border.color: floatingBar ? Qt.darker(accentColor, 1.2) : "transparent"
                 layer.enabled: dropShadow
                 layer.effect: DropShadow

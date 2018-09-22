@@ -60,7 +60,8 @@ Kirigami.AbstractApplicationWindow
     /*************************************************/
 
     property bool isWide : root.width >= Kirigami.Units.gridUnit * 30 || pageStack.wideMode
-
+    
+    property int radiusV : unit * 4
     property int iconSize : iconSizes.medium * (isMobile ? 0.95 : 1)
 
     readonly property int unit : Maui.Style.unit
@@ -115,6 +116,11 @@ Kirigami.AbstractApplicationWindow
     readonly property color darkBgColor: darkBackgroundColor
 
 
+    property color warningColor : Maui.Style.warningColor
+    property color dangerColor : Maui.Style.dangerColor
+    property color infoColor : Maui.Style.infoColor
+    property color suggestedColor : Maui.Style.suggestedColor
+    
     /* ANDROID THEMING*/
 
     Material.theme: Material.Light

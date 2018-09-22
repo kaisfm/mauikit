@@ -28,7 +28,7 @@ Item
     id: control
 
     property alias pathBarBG : pathBarBG
-    
+    height: iconSizes.big
     signal pathChanged(string path)
     signal homeClicked()
     signal placeClicked(string path)
@@ -39,7 +39,7 @@ Item
         anchors.fill: parent
         z:-1
         color: viewBackgroundColor
-        radius: unit * 4
+        radius: radiusV
         opacity: 1
         border.color: Qt.tint(textColor, Qt.rgba(color.r, color.g, color.b, 0.7))
         border.width: unit
@@ -135,7 +135,7 @@ Item
             delegate: PathBarDelegate
             {
                 id: delegate
-                height: iconSizes.big - (Kirigami.Units.devicePixelRatio * 2)
+                height: pathBar.height - (Kirigami.Units.devicePixelRatio * 2)
                 width: iconSizes.big * 3
                 Connections
                 {

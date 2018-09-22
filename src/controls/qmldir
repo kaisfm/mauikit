@@ -33,6 +33,9 @@ PathBar 1.0 PathBar.qml
 Dialog 1.0 Dialog.qml
 Popup 1.0 Popup.qml
 AboutDialog 1.0 AboutDialog.qml
+Button 1.0 Button.qml
+TextField 1.0 TextField.qml
+SearchBar 1.0 SearchBar.qml
 
 
 

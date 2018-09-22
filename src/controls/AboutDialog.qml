@@ -24,7 +24,7 @@
     import org.kde.mauikit 1.0 as Maui
     import QtQml 2.11
     
-    Maui.Popup
+    Maui.Dialog
     {
         id: control
         property var app : ({})
@@ -37,20 +37,40 @@
         property string appDonation: ""
         property string appIcon: "qrc:/assets/mauikit-logo.png"
         
+        defaultButtons: false
         widthHint: 0.9
         heightHint: 0.8
         
         maxWidth: unit* 400
         maxHeight: unit * 200
         
-        padding: space.big
+        footBar.middleContent: [
+         Maui.ToolButton
+                    {
+                        iconName: "documentinfo"  
+                    },
+                    
+                    Maui.ToolButton
+                    {
+                        iconName: "view-links" 
+                        onClicked: Maui.FM.openUrl(control.appLink)
+                        
+                    },
+                    
+                    Maui.ToolButton
+                    {
+                        iconName: "love" 
+                        onClicked: Maui.FM.openUrl(control.appDonation)                       
+                        
+                    }
+        ]
         
         GridLayout
         {
             id: layout
             anchors.fill: parent        
             columns: 2
-            rows: 4
+            rows: 3
             columnSpacing: space.enormous
             rowSpacing: space.small
             
@@ -120,14 +140,15 @@
             
             ScrollView
             {
-                Layout.preferredHeight: parent.height * 0.33
                 Layout.fillWidth: true
+                Layout.fillHeight: true
                 
                 Layout.row: 3
                 Layout.column: 2
                 Layout.margins: space.small
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-                padding: 0                
+                padding: 0     
+                clip: true
                 
                 TextArea
                 {
@@ -143,7 +164,7 @@
                     color: textColor
                     font.pointSize: fontSizes.default
                     wrapMode: TextEdit.WrapAnywhere
-                    
+                       clip: true
                     background: Rectangle
                     {
                         color: "transparent"
@@ -195,51 +216,7 @@
             //                  wrapMode: TextEdit.WrapAnywhere
             //                 
             //             }
-            //         }   
-            
-            Item
-            {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                
-                Layout.row: 4
-                Layout.column: 1
-                Layout.columnSpan: 2
-                Layout.margins: space.tiny
-                Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
-                
-                
-                Maui.ToolBar
-                {
-                    background: Rectangle
-                    {
-                        color: "transparent"   
-                    }
-                    
-                    width: parent.width
-                    middleContent : [
-                    Maui.ToolButton
-                    {
-                        iconName: "documentinfo"  
-                    },
-                    
-                    Maui.ToolButton
-                    {
-                        iconName: "view-links" 
-                        onClicked: Maui.FM.openUrl(control.appLink)
-                        
-                    },
-                    
-                    Maui.ToolButton
-                    {
-                        iconName: "love" 
-                        onClicked: Maui.FM.openUrl(control.appDonation)                       
-                        
-                    }
-                    ]
-                }
-            }
-            
+            //         }               
             
         }    
         onOpened : control.app = Maui.Handy.appInfo()

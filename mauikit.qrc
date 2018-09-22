@@ -31,5 +31,8 @@
         <file alias="Dialog.qml">src/controls/Dialog.qml</file>
         <file alias="AboutDialog.qml">src/controls/AboutDialog.qml</file>
         <file alias="Popup.qml">src/controls/Popup.qml</file>
+        <file alias="Button.qml">src/controls/Button.qml</file>
+        <file alias="TextField.qml">src/controls/TextField.qml</file>
+        <file alias="SearchBar.qml">src/controls/SearchBar.qml</file>
     </qresource>
 </RCC>

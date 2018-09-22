@@ -29,18 +29,29 @@ Popup
     id: control
     property int maxWidth : parent.width
     property int maxHeight : parent.height
-    property double hint : 1
+    property double hint : 0.9
     property double heightHint : hint 
     property double widthHint : hint
 
+    property int verticalAlignment : Qt.AlignVCenter
+    
     parent: ApplicationWindow.overlay
 
     width: parent.width * widthHint > maxWidth ? maxWidth : parent.width * widthHint
     height: parent.height * heightHint > maxHeight ? maxHeight: parent.height * heightHint
 
 
-    x: parent.width / 2 - width / 2
-    y: parent.height / 2 - height / 2
+    x:  parent.width / 2 - width / 2
+    y: if(verticalAlignment === Qt.AlignVCenter) 
+        parent.height / 2 - height / 2
+        else if(verticalAlignment === Qt.AlignTop)
+                    parent.height / 2 + height * 0.3
+                else if(verticalAlignment === Qt.AlignBottom)
+                    (parent.height) - (height *1.3)
+else
+                        parent.height / 2 - height / 2
+
+
     z: parent.z+1
 
     modal: true

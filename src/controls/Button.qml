@@ -29,13 +29,15 @@ Button
 {
     id: control
     property color color: buttonBackgroundColor
-    property color fgColor : Qt.darker(control.color, 1.8)
+    property color fgColor : Qt.darker(control.color, 2)
     property color bgColor : control.color
     property alias buttonBG : buttonBG
+    
     implicitWidth: Math.max(background ? background.implicitWidth : 0,
                             contentItem.implicitWidth + leftPadding + rightPadding)
     implicitHeight: background.implicitHeight
     hoverEnabled: !isMobile
+    
     
     leftPadding: space.small
     rightPadding: leftPadding
@@ -44,7 +46,8 @@ Button
     {
         text: control.text
         font: control.font
-        color: fgColor
+        color: !control.enabled ? Qt.lighter(fgColor, 1,2) :
+                control.highlighted || control.down ? Qt.lighter(bgColor, 1.4) : fgColor 
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
@@ -57,24 +60,13 @@ Button
         
         implicitHeight: iconSizes.medium + space.small
      
-        color: bgColor
-                
+         color: !control.enabled ? viewBackgroundColor :
+                control.highlighted || control.down ? Qt.darker(bgColor, 1.4) : bgColor    
         border.color: Qt.darker(color, 1.4)
         
         border.width: unit
-        radius: unit * 3
-        
-         layer.enabled: true
-        
-        layer.effect: DropShadow 
-        {
-            transparentBorder: true
-            radius: 8
-            samples: 16
-            horizontalOffset: 0
-            verticalOffset: unit * 4
-            color: Qt.rgba(0, 0, 0, 0.3)
-        }
+        radius: unit * 3       
+     
     }
     
 }

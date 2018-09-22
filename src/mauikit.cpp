@@ -22,6 +22,7 @@
 #include <QDebug>
 #include <QQuickStyle>
 #include "fm.h"
+#include "handy.h"
 
 #ifdef Q_OS_ANDROID
 #include "mauiandroid.h"
@@ -66,6 +67,7 @@ void MauiKit::registerTypes(const char *uri)
     qmlRegisterType(componentUrl(QStringLiteral("LabelDelegate.qml")), uri, 1, 0, "LabelDelegate");
     qmlRegisterType(componentUrl(QStringLiteral("NewDialog.qml")), uri, 1, 0, "NewDialog");
     qmlRegisterType(componentUrl(QStringLiteral("Dialog.qml")), uri, 1, 0, "Dialog");
+    qmlRegisterType(componentUrl(QStringLiteral("AboutDialog.qml")), uri, 1, 0, "AboutDialog");
     qmlRegisterType(componentUrl(QStringLiteral("Popup.qml")), uri, 1, 0, "Popup");
     qmlRegisterType(componentUrl(QStringLiteral("TagsBar.qml")), uri, 1, 0, "TagsBar");
     qmlRegisterType(componentUrl(QStringLiteral("private/TagList.qml")), uri, 1, 0, "TagList");
@@ -97,6 +99,12 @@ void MauiKit::registerTypes(const char *uri)
                                       [](QQmlEngine*, QJSEngine*) -> QObject* {
        auto fm = new FM;
         return fm;
+    });
+    
+     qmlRegisterSingletonType<Handy>(uri, 1, 0, "Handy",
+                                      [](QQmlEngine*, QJSEngine*) -> QObject* {
+       auto handy = new Handy;
+        return handy;
     });
 
     qmlProtectModule(uri, 1);

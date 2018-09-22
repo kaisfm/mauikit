@@ -32,6 +32,7 @@ FileDialog 1.0 FileDialog.qml
 PathBar 1.0 PathBar.qml
 Dialog 1.0 Dialog.qml
 Popup 1.0 Popup.qml
+AboutDialog 1.0 AboutDialog.qml
 
 
 

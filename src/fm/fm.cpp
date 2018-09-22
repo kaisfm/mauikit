@@ -25,6 +25,7 @@
 #include <QFlags>
 #include <QDateTime>
 #include <QFileInfo>
+#include <QDesktopServices>
 
 #if defined(Q_OS_ANDROID)
 #include "mauiandroid.h"
@@ -430,6 +431,11 @@ bool FM::createFile(const QString &path, const QString &name)
     }
 
     return false;
+}
+
+bool FM::openUrl(const QString &url)
+{
+        return QDesktopServices::openUrl(QUrl::fromUserInput(url));
 }
 
 QVariantMap FM::dirConf(const QString &path)

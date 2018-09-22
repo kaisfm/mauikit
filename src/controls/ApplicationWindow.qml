@@ -49,6 +49,7 @@ Kirigami.AbstractApplicationWindow
     default property alias content : page.content
     property alias pageStack: __pageStack
     property alias menuDrawer : menuDrawer
+    property alias about : aboutDialog
 
     //redefines here as here we can know a pointer to PageRow
     wideScreen: width >= applicationWindow().pageStack.defaultColumnWidth * 1.5
@@ -295,6 +296,12 @@ Kirigami.AbstractApplicationWindow
     {
         id: menuDrawer
 //        bg: pageStack
+    }
+    
+    
+    Maui.AboutDialog
+    {
+        id: aboutDialog  
     }
 
      Component.onCompleted:

@@ -8,7 +8,6 @@ Maui.Dialog
     entryField: true
     
     signal finished(string text)
-
     
     acceptText: "Yes, go ahead"
     rejectText: "No, cancel"

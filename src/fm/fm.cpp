@@ -412,7 +412,11 @@ bool FM::removeDir(const QString &path)
 
 bool FM::rename(const QString &path, const QString &name)
 {
-    return false;
+    QFile file(path);
+    auto url = QFileInfo(path).dir().absolutePath();
+        qDebug()<< "RENAME FILE TO:" << path << name << url;
+
+    return file.rename(url+"/"+name);
 }
 
 bool FM::createDir(const QString &path, const QString &name)

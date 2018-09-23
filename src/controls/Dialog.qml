@@ -104,7 +104,7 @@ Maui.Popup
                         textFormat : TextEdit.AutoText
                         color: textColor
                         font.pointSize: fontSizes.default
-                        wrapMode: TextEdit.WrapAnywhere
+                        wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
                         
                         background: Rectangle
                         {

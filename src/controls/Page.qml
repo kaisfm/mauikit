@@ -44,7 +44,7 @@ QQC2.Page
 
     property int footBarAligment : Qt.AlignCenter
 
-    property bool dropShadow: true
+    property bool dropShadow: false
     property bool altToolBars : false
     property int footBarMargins : space.large
     property bool floatingBar: false
@@ -124,6 +124,21 @@ QQC2.Page
                 id: headBarBG
                 color: viewBackgroundColor
                 implicitHeight: toolBarHeightAlt                
+              
+                Kirigami.Separator
+                {
+                    id: headBarBorder
+                    color:  Qt.tint(Kirigami.Theme.textColor, 
+Qt.rgba(headBarBG.color.r, headBarBG.color.g, headBarBG.color.b, 0.7))
+                    
+                    anchors
+                    {
+                        left: parent.left
+                        right: parent.right
+                        bottom: altToolBars ? undefined : parent.bottom
+                        top: altToolBars ? parent.top : undefined
+                    }
+}
               
                 layer.enabled: dropShadow
                 layer.effect: DropShadow
@@ -230,6 +245,19 @@ QQC2.Page
                 color: floatingBar ? accentColor : viewBackgroundColor
                 radius: floatingBar ? radiusV : 0
                 border.color: floatingBar ? Qt.darker(accentColor, 1.2) : "transparent"
+                
+                 Kirigami.Separator
+                {
+                    visible: !floatingBar
+                    color: borderColor
+                    anchors
+                    {
+                        left: parent.left
+                        right: parent.right
+                        top: parent.top
+                    }
+}
+                
                 layer.enabled: dropShadow
                 layer.effect: DropShadow
                 {

@@ -51,8 +51,8 @@ Kirigami.GlobalDrawer
         {
             text: "About..."
             iconName: "documentinfo"
+            onTriggered: about.open()
         }
-
     ]
 
     FastBlur

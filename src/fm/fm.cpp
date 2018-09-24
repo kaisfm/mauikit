@@ -25,6 +25,7 @@
 #include <QFlags>
 #include <QDateTime>
 #include <QFileInfo>
+#include <QDesktopServices>
 
 #if defined(Q_OS_ANDROID)
 #include "mauiandroid.h"
@@ -411,7 +412,11 @@ bool FM::removeDir(const QString &path)
 
 bool FM::rename(const QString &path, const QString &name)
 {
-    return false;
+    QFile file(path);
+    auto url = QFileInfo(path).dir().absolutePath();
+        qDebug()<< "RENAME FILE TO:" << path << name << url;
+
+    return file.rename(url+"/"+name);
 }
 
 bool FM::createDir(const QString &path, const QString &name)
@@ -430,6 +435,11 @@ bool FM::createFile(const QString &path, const QString &name)
     }
 
     return false;
+}
+
+bool FM::openUrl(const QString &url)
+{
+        return QDesktopServices::openUrl(QUrl::fromUserInput(url));
 }
 
 QVariantMap FM::dirConf(const QString &path)

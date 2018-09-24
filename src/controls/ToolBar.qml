@@ -112,7 +112,7 @@ ToolBar
     {
         id: mainFlickable
         
-        property int itemSpacing: space.medium
+        property int itemSpacing: space.big
         
         flickableDirection: Flickable.HorizontalFlick
         anchors.fill: parent

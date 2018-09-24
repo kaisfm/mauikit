@@ -23,7 +23,7 @@ import QtQuick.Controls 2.2
 import org.kde.mauikit 1.0 as Maui
 import org.kde.kirigami 2.0 as Kirigami
 
-Popup
+Maui.Popup
 {
     property var itemUrls : []
 
@@ -31,20 +31,13 @@ Popup
 
     modal: true
 
-    height: grid.itemSize * 5
-    width: isMobile ? parent.width * 0.9 : parent.width * 0.5
-
-    parent: ApplicationWindow.overlay
-
-    x: (parent.width / 2) - (width / 2)
-    y: (parent.height) - (height *1.3)
+    widthHint: 0.9
     
-    background: Rectangle
-    {
-        color: viewBackgroundColor
-        radius: unit * 6
-        border.color: borderColor
-    }
+   maxHeight: grid.itemSize * 5
+    maxWidth: unit * 500
+
+verticalAlignment: Qt.AlignBottom
+    
 
     ColumnLayout
     {

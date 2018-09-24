@@ -29,10 +29,10 @@ QtObject
     readonly property bool isAndroid: Qt.platform.os == "android"
     readonly property bool isMobile : Kirigami.Settings.isMobile
 
-    property color warningColor : "#fad980"
-    property color dangerColor : "#e59393"
-    property color inforColor : "#94bfa2"
-    property color suggestedColor : "#9bdaf1"
+    property color warningColor : "#FFB300"
+    property color dangerColor : "#D81B60"
+    property color infoColor : "#4caf50"
+    property color suggestedColor : "#039BE5"
 
     property int unit : Kirigami.Units.devicePixelRatio
 
@@ -71,7 +71,10 @@ QtObject
                                                                              defaultFontSize * 1.1),
 
                                           large: (isMobile ? defaultFontSize * 1.1 :
-                                                                               defaultFontSize * 1.2)
+                                                                               defaultFontSize * 1.2),
+                                      
+                                           huge: (isMobile ? defaultFontSize * 1.2 :
+                                                                               defaultFontSize * 1.3)
                                       })
 
     readonly property var space : ({

@@ -23,70 +23,43 @@ import QtQuick.Controls 2.2
 import org.kde.mauikit 1.0 as Maui
 import org.kde.kirigami 2.0 as Kirigami
 
-Popup
+Maui.Popup
 {
     property var itemUrls : []
 
-    padding: contentMargins
 
     modal: true
 
-    height: grid.itemSize * 5
-    width: isMobile ? parent.width * 0.9 : parent.width * 0.5
-
-    parent: ApplicationWindow.overlay
-
-    x: (parent.width / 2) - (width / 2)
-    y: (parent.height) - (height *1.3)
+    widthHint: 0.9
     
-    background: Rectangle
-    {
-        color: viewBackgroundColor
-        radius: unit * 6
-        border.color: borderColor
-    }
+   maxHeight: grid.itemSize * 5
+    maxWidth: unit * 500
 
-    ColumnLayout
-    {
-        anchors.fill: parent
-        height: parent.height
-        width: parent.width
+verticalAlignment: Qt.AlignBottom
+    
 
-        Label
-        {
-            text: qsTr("Open with...")
-            color: textColor
-            height: toolBarHeightAlt
-            width: parent.width
-            Layout.fillWidth: true
-            horizontalAlignment: Qt.AlignHCenter
-            elide: Qt.ElideRight
-            font.pointSize: fontSizes.big
-            padding: contentMargins
-            font.bold: true
-            font.weight: Font.Bold
-        }
-
-        Item
-        {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            Layout.margins: space.medium
-            Maui.GridBrowser
-            {
-                id: grid
-                showEmblem: false
-                centerContent: true
-
-                onItemClicked:
-                {
-                    grid.currentIndex = index
-                    triggerService(index)
-                }
-            }
-        }
-    }
-
+   Maui.Page
+   {
+	   anchors.fill: parent
+	   headBarTitle: qsTr("Open with...")
+	   headBarExit: false
+	   
+	  
+	   Maui.GridBrowser
+	   {
+		   id: grid
+		   anchors.fill: parent
+		   showEmblem: false
+		   centerContent: true
+		   
+		   onItemClicked:
+		   {
+			   grid.currentIndex = index
+			   triggerService(index)
+		   }
+	   }
+}
+    
 
     onOpened: populate()
 

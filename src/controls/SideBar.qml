@@ -30,6 +30,7 @@ ListView
 
     property color bgColor: isCollapsed ? altColor : backgroundColor
     property color fgColor : isCollapsed ? altColorText : textColor
+    property string downloadBadget : ""
 
     property int iconSize : isMobile ? (isCollapsed || isWide ? iconSizes.medium : iconSizes.big) :
                                        iconSizes.small

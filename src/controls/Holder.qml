@@ -46,7 +46,10 @@ Item
         anchors.centerIn: parent
         width: emojiSize
         height: emojiSize
+        sourceSize.width: width
+        sourceSize.height: height
         source: emoji
+        asynchronous: true
         horizontalAlignment: Qt.AlignHCenter
 
         fillMode: Image.PreserveAspectFit

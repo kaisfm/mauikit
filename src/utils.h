@@ -24,6 +24,12 @@
 #include <QFileInfo>
 #include <QSettings>
 
+#define MAUIKIT_MAJOR_VERSION 0
+#define MAUIKIT_MINOR_VERSION 1
+#define MAUIKIT_PATCH_VERSION 0
+
+#define MAUIKIT_VERSION_STR "0.1.0"
+
 namespace UTIL
 {
     inline bool fileExists(const QString &url)
@@ -60,7 +66,6 @@ namespace UTIL
 
         return variant;
     }
-
 }
 
 

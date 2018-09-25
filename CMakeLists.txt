@@ -87,25 +87,29 @@ set(tagging_HDRS
 
 #use dbus on linux, bsd etc, but not andoid and apple stuff
 if(ANDROID)
+
     find_package(Qt5 REQUIRED COMPONENTS AndroidExtras Xml)
-    set(mauikit_Android Qt5::AndroidExtras)
-    set(mauikit_Android_SRCS
-        src/android/mauiandroid.h
-        src/android/mauiandroid.cpp
-        )
-        
-    qt5_add_resources(MauiAndroid_RESOURCES 
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/android/android.qrc
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/android/icons.qrc
-        )
+    qt5_add_resources(MauiAndroid_RESOURCES src/android/android.qrc src/android/icons.qrc)
     
     set(MAUIANDROID_LIBS
         Qt5::Xml
         Qt5::AndroidExtras
         )
+
+    if (NOT EXISTS ${CMAKE_SOURCE_DIR}/src/android/icons/luv-icon-theme/.git)
+        find_package(Git REQUIRED)
+        execute_process(COMMAND ${GIT_EXECUTABLE} clone --depth 1 https://github.com/Nitrux/luv-icon-theme.git ${CMAKE_SOURCE_DIR}/src/android/icons/luv-icon-theme)
+    endif()
+    set(mauikit_Android_SRCS
+        src/android/mauiandroid.cpp
+        ${MauiAndroid_RESOURCES}
+        ${MauiAndroid_icons_RESOURCES}
+        )
 else()
+
     find_package(KF5 ${KF5_VERSION} REQUIRED COMPONENTS I18n Notifications 
 Config Service KIO ConfigWidgets)
+
     set(mauikit_KDE_SRCS
         src/kde/mauikde.cpp
         src/kde/kdeconnect.cpp
@@ -126,10 +130,7 @@ Config Service KIO ConfigWidgets)
         KF5::Service
         KF5::KIONTLM
         KF5::ConfigWidgets
-        )        
-        
-    set(mauikit_KDE KF5::ConfigCore KF5::Notifications KF5::I18n KF5::Service 
-KF5::KIOCore KF5::KIOWidgets KF5::KIOFileWidgets KF5::KIONTLM)
+        )          
 endif()
 # set(CMAKE_AUTORCC ON)
 
@@ -155,7 +156,6 @@ ${mauikit_RESOURCES}
 ${mauikit_ASSETS}
 
 ${mauikit_Android_SRCS}
-${MauiAndroid_RESOURCES}
 
 ${mauikit_KDE_HDRS}
 ${mauikit_KDE_SRCS})
@@ -166,10 +166,6 @@ ${mauikit_KDE_SRCS})
 # add_definitions(-DMAUI_APP)
 
 target_link_libraries(MauiKit
-#     PRIVATE
-#     ${mauikit_RESOURCES}
-#     ${tagging_RESOURCES}
-   
     PUBLIC
     Qt5::Core
     Qt5::Sql
@@ -181,7 +177,13 @@ target_link_libraries(MauiKit
     ${MAUIKDE_KF5LIBS}
     ${MAUIANDROID_LIBS}
     )
-    
+
+if (ANDROID)
+    kde_enable_exceptions(MauiKit PRIVATE)
+    target_include_directories(MauiKit PRIVATE src/android)
+    install(FILES src/android/mauiandroid.h DESTINATION ${KDE_INSTALL_INCLUDEDIR}/MauiKit COMPONENT Devel)
+endif()
+
 generate_export_header(MauiKit BASE_NAME MauiKit)
 install(TARGETS MauiKit EXPORT MauiKitTargets ${INSTALL_TARGETS_DEFAULT_ARGS})
 
@@ -200,11 +202,9 @@ add_dependencies(MauiKit copy)
 install(DIRECTORY src/controls/ DESTINATION 
 ${KDE_INSTALL_QMLDIR}/org/kde/mauikit)
 
-message(STATUS ${KDE_INSTALL_QMLDIR})
 install(TARGETS MauiKit DESTINATION 
 ${KDE_INSTALL_QMLDIR}/org/kde/mauikit)
 
-message(STATUS ${KDE_INSTALL_INCLUDEDIR})
 install(FILES
             ${mauikit_HDRS} 
             ${mauikit_KDE_HDRS}

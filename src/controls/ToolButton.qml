@@ -28,7 +28,12 @@ ToolButton
     id: control
     
     /* Controlc color scheming */
-	ColorScheme {id: colorScheme}
+	ColorScheme 
+	{
+		id: colorScheme
+		backgroundColor: "transparent"
+		borderColor: "transparent"
+	}
 	property alias colorScheme : colorScheme
 	/***************************/
 
@@ -41,13 +46,18 @@ ToolButton
 	
     hoverEnabled: !isMobile
     
+   implicitWidth: Math.max(background ? background.implicitWidth : 0,
+                            contentItem.implicitWidth + leftPadding + rightPadding)
+    implicitHeight: Math.max(background ? background.implicitHeight : 0,
+                             contentItem.implicitHeight + topPadding + bottomPadding)
+    
     height: control.display === ToolButton.IconOnly ? size + space.medium : implicitHeight
     width: control.display === ToolButton.IconOnly ? height : implicitWidth
     
     icon.name:  iconName
     icon.width:  size
     icon.height: size
-    icon.color: !isMask ? "transparent" : iconColor
+    icon.color: !isMask ? "transparent" :  (down || pressed) ? colorScheme.highlightColor : iconColor
 
     onClicked: if(anim) animIcon.running = true
 
@@ -61,9 +71,10 @@ ToolButton
     background: Rectangle
     {
      color: /*(down || pressed || checked) */ checked && enabled  ? 
-     Qt.lighter(colorScheme.highlightColor, 1.2) : "transparent"
+     Qt.lighter(colorScheme.highlightColor, 1.2) : colorScheme.backgroundColor
      radius: unit * 3
-     opacity: 0.5
+     opacity: (down || pressed || checked) && enabled  ?  0.5 : 1
+     border.color: colorScheme.borderColor
     }
 
     contentItem: IconLabel

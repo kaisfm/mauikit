@@ -21,7 +21,11 @@
 
 #include <QDebug>
 #include <QQuickStyle>
+
 #include "fm.h"
+#include "fmmodel.h"
+#include "fmlist.h"
+
 #include "handy.h"
 
 #ifdef Q_OS_ANDROID
@@ -76,6 +80,8 @@ void MauiKit::registerTypes(const char *uri)
 	qmlRegisterType(componentUrl(QStringLiteral("Badge.qml")), uri, 1, 0, "Badge");
 	qmlRegisterType(componentUrl(QStringLiteral("GridView.qml")), uri, 1, 0, "GridView");
 	qmlRegisterType(componentUrl(QStringLiteral("Item.qml")), uri, 1, 0, "Item");
+	qmlRegisterType(componentUrl(QStringLiteral("Menu.qml")), uri, 1, 0, "Menu");
+	qmlRegisterType(componentUrl(QStringLiteral("MenuItem.qml")), uri, 1, 0, "MenuItem");
 	qmlRegisterType(componentUrl(QStringLiteral("private/TagList.qml")), uri, 1, 0, "TagList");
 
     /** BROWSING CONTROLS **/
@@ -85,25 +91,29 @@ void MauiKit::registerTypes(const char *uri)
     /** FM CONTROLS **/
     qmlRegisterType(componentUrl(QStringLiteral("FileDialog.qml")), uri, 1, 0, "FileDialog");
     qmlRegisterType(componentUrl(QStringLiteral("PathBar.qml")), uri, 1, 0, "PathBar");
-
-
+	
 #ifdef Q_OS_ANDROID
+	qmlRegisterType(componentUrl(QStringLiteral("SyncDialogA.qml")), uri, 1, 0, "SyncDialog");	
     qmlRegisterSingletonType<MAUIAndroid>(uri, 1, 0, "Android",
                                           [](QQmlEngine*, QJSEngine*) -> QObject* {
         MAUIAndroid *android = new MAUIAndroid;
         return android;
     });
 #else
-    qmlRegisterSingletonType<MAUIKDE>(uri, 1, 0, "KDE",
+	qmlRegisterType(componentUrl(QStringLiteral("SyncDialog.qml")), uri, 1, 0, "SyncDialog");	
+	qmlRegisterType(componentUrl(QStringLiteral("Terminal.qml")), uri, 1, 0, "Terminal");	
+	qmlRegisterSingletonType<MAUIKDE>(uri, 1, 0, "KDE",
                                       [](QQmlEngine*, QJSEngine*) -> QObject* {
         MAUIKDE *kde = new MAUIKDE;
         return kde;
     });
 #endif
-
+	
+	qmlRegisterType<FMModel>("FMModel", 1, 0, "FMModel");
+	qmlRegisterType<FMList>("FMList", 1, 0, "FMList");
     qmlRegisterSingletonType<FM>(uri, 1, 0, "FM",
                                       [](QQmlEngine*, QJSEngine*) -> QObject* {
-       auto fm = new FM;
+		auto fm = new FM;
         return fm;
     });
     

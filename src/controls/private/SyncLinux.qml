@@ -17,38 +17,18 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef HANDY_H
-#define HANDY_H
+import QtQuick 2.0
+import QtWebEngine 1.5
 
-#include <QObject>
-
-#ifndef STATIC_MAUIKIT
-#include "mauikit_export.h"
-#endif
-
-#include <QVariantMap>
-
-#include "utils.h"
-
-#ifdef STATIC_MAUIKIT
-class Handy : public QObject
-#else
-class MAUIKIT_EXPORT Handy : public QObject
-#endif
+WebEngineView
 {
-    Q_OBJECT
-public:
-    Handy(QObject *parent = nullptr);
-    ~Handy();
-	Q_INVOKABLE static QVariantMap appInfo();  
-	Q_INVOKABLE static QVariantMap userInfo();  
+	id: webView
+	url: "https://nextcloud.webo.hosting/"
 	
-	Q_INVOKABLE static bool saveSetting(const QString &key, const QVariant &value, const QString &group);
-	Q_INVOKABLE static QVariant loadSetting(const QString &key, const QString &group, const QVariant &defaultValue);
+	onLoadingChanged:
+	{
+		if (loadRequest.errorString)
+			console.error(loadRequest.errorString);
+	}
 	
-	Q_INVOKABLE static QString getClipboard();
-	Q_INVOKABLE static bool copyToClipboard(const QString &text);
-	
-};
-
-#endif // HANDY_H
+}

@@ -54,6 +54,7 @@ ItemDelegate
     signal leftEmblemClicked(int index)
 
     focus: true
+    clip: true
     hoverEnabled: !isMobile
 
     background: Rectangle
@@ -189,11 +190,10 @@ ItemDelegate
 
         Item
         {
-			height: (unit *24) + space.small
 			Layout.fillWidth: true
-			Layout.maximumHeight: (isDetails ? parent.height : height)
-			Layout.minimumHeight: (isDetails ? parent.height : height)
-			Layout.preferredHeight: (isDetails ? parent.height : height)
+			Layout.maximumHeight: (isDetails ? parent.height :  fontSizes.default * 5)
+			Layout.minimumHeight: (isDetails ? parent.height :  control.height - folderSize - space.tiny)
+			Layout.preferredHeight: (isDetails ? parent.height : control.height - folderSize - space.tiny)
 			
             Layout.row: isDetails ? 1 : 2
             Layout.column: isDetails ? 2 : 1
@@ -218,10 +218,11 @@ ItemDelegate
                 {
                     visible: parent.visible && showSelectionBackground && !isDetails
                     anchors.fill: parent
+                    
                     z: -1
-                    radius: unit * 3
+                    radius: radiusV
                     color: hightlightedColor
-                    opacity: hovered ? 0.25 : 1
+                    opacity: hovered ? 0.25 : 0.5
                 }
             }
         }

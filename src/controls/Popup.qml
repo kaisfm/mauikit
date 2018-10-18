@@ -56,9 +56,9 @@ Popup
     y: if(verticalAlignment === Qt.AlignVCenter) 
         parent.height / 2 - height / 2
         else if(verticalAlignment === Qt.AlignTop)
-                    parent.height / 2 + height * 0.3
+			parent.height / 2 + (height + space.huge)
                 else if(verticalAlignment === Qt.AlignBottom)
-                    (parent.height) - (height *1.3)
+                    (parent.height) - (height + space.huge)
 else
                         parent.height / 2 - height / 2
 
@@ -72,8 +72,8 @@ else
     margins: unit 
     padding: unit
     
-    topPadding: control.padding
-    bottomPadding: control.padding
+    topPadding: popupBackground.radius
+    bottomPadding: popupBackground.radius
     leftPadding: control.padding
     rightPadding: control.padding
     
@@ -84,21 +84,26 @@ else
 
     background: Rectangle
     {
-        radius: unit * 2
+		id: popupBackground
+        radius: radiusV
         color: colorScheme.backgroundColor
-        border.color: colorScheme.borderColor
-        layer.enabled: true    
-    }
+        border.color: colorScheme.borderColor       
+        
+    }  
 
-    enter: Transition
+    enter: Transition 
     {
-        NumberAnimation { property: "opacity"; from: 0.0; to: 1.0;  duration: 150 }
-    }
-
-    exit: Transition
-    {
-        NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 150 }
-    }
+		// grow_fade_in
+		NumberAnimation { property: "scale"; from: 0.9; to: 1.0; easing.type: Easing.OutQuint; duration: 220 }
+		NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; easing.type: Easing.OutCubic; duration: 150 }
+	}
+	
+	exit: Transition 
+	{
+		// shrink_fade_out
+		NumberAnimation { property: "scale"; from: 1.0; to: 0.9; easing.type: Easing.OutQuint; duration: 220 }
+		NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; easing.type: Easing.OutCubic; duration: 150 }
+	}
 
     Material.accent: colorScheme.accentColor
     Material.background: colorScheme.backgroundColor

@@ -26,10 +26,14 @@ import "private"
 
 ListView
 {
-    id: control
+	id: control
+	/* Controlc color scheming */
+	ColorScheme {id: colorScheme}
+	property alias colorScheme : colorScheme
+	/***************************/
 
-    property color bgColor: isCollapsed ? altColor : backgroundColor
-    property color fgColor : isCollapsed ? altColorText : textColor
+	property color bgColor: isCollapsed ? colorScheme.altColor : colorScheme.backgroundColor
+	property color fgColor : isCollapsed ? colorScheme.altColorText : colorScheme.textColor
     property string downloadBadget : ""
 
     property int iconSize : isMobile ? (isCollapsed || isWide ? iconSizes.medium : iconSizes.big) :

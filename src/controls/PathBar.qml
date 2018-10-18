@@ -37,8 +37,8 @@ Maui.Item
     {
         id: pathBarBG
         anchors.fill: parent
-        z:-1
-        color: colorScheme.backgroundColor
+        z: -1
+        color: pathEntry.visible ? colorScheme.viewBackgroundColor : colorScheme.backgroundColor
         radius: radiusV
         opacity: 1
         border.color: colorScheme.borderColor
@@ -51,17 +51,18 @@ Maui.Item
         anchors.fill:  parent
         visible: false
         
-        TextInput
+        Maui.TextField
         {
             id: entry
-            clip: true
             height: parent.height
             Layout.fillHeight: true
             Layout.fillWidth: true
             Layout.leftMargin: contentMargins
             Layout.alignment: Qt.AlignVCenter
-            verticalAlignment: Qt.AlignVCenter
-            color: control.colorScheme.textColor
+            colorScheme.textColor: control.colorScheme.textColor
+            colorScheme.backgroundColor: "transparent"
+			colorScheme.borderColor: "transparent"
+            horizontalAlignment: Qt.AlignLeft
             onAccepted:
             {
                 pathChanged(text)
@@ -212,6 +213,4 @@ Maui.Item
         entry.text = browser.currentPath
         pathCrumbs.visible = !pathCrumbs.visible
     }
-    
-    
 }

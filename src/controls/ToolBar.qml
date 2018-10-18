@@ -174,7 +174,6 @@ ToolBar
             id: layout
             width: control.width
             height: control.height
-            clip: true 
             
             Row
             {
@@ -189,7 +188,7 @@ ToolBar
             Kirigami.Separator
             {
                 Layout.fillHeight: true
-                Layout.margins: space.medium
+                Layout.margins: 0
                 Layout.topMargin: space.big
                 Layout.bottomMargin: space.big
                 width: unit
@@ -228,7 +227,6 @@ ToolBar
                 Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
                 Layout.rightMargin: middleContent.length === 1 ? 0 : margins
                 Layout.leftMargin: middleContent.length === 1 ? 0 : margins
-                clip: true
                 
                 Flickable
                 {
@@ -242,6 +240,7 @@ ToolBar
                     
                     boundsBehavior: isMobile ?  Flickable.DragOverBounds : Flickable.StopAtBounds
                     
+                    clip: true
                     
                     RowLayout
                     {
@@ -251,7 +250,7 @@ ToolBar
                         
                         Item
                         {
-                            Layout.fillWidth: true
+							Layout.fillWidth: !flickable.interactive
                             Layout.minimumHeight: 0
                             Layout.minimumWidth: 0
                         }
@@ -259,7 +258,7 @@ ToolBar
                         Row
                         {
                             id: middleRowContent
-                            
+                            clip: true
                             spacing: middleContent.length === 1 ? 0 : control.spacing
 //                             Layout.maximumWidth: control.width - leftRowContent.implicitWidth - rightRowContent.implicitWidth
                             
@@ -267,13 +266,13 @@ ToolBar
                         
                         Item
                         {
-                            Layout.fillWidth: true
-                            Layout.minimumHeight: 0
+							Layout.fillWidth: !flickable.interactive
+							Layout.minimumHeight: 0
                             Layout.minimumWidth: 0
                         }
                     }
                     
-                    ScrollBar.horizontal: ScrollBar { visible: false}
+                    ScrollBar.horizontal: ScrollBar { visible: false }
                 }
                 
             }
@@ -281,7 +280,7 @@ ToolBar
             Kirigami.Separator
             {
                 Layout.fillHeight: true
-                Layout.margins: space.medium
+                Layout.margins: 0
                 Layout.topMargin: space.big
                 Layout.bottomMargin: space.big
                 width: unit
@@ -318,6 +317,7 @@ ToolBar
                 spacing: rightContent.length > 0 ? control.spacing : 0
                 Layout.rightMargin: rightContent.length > 0 ? margins : 0
                 Layout.minimumWidth: 0
+                clip: true
             }
         }
         ScrollBar.horizontal: ScrollBar { visible: false}

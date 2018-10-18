@@ -78,7 +78,7 @@ Item
 		flickableDirection: Flickable.AutoFlickDirection
 		snapMode: GridView.SnapToRow
 		highlightMoveDuration: 0
-		
+		interactive: true
 		ScrollBar.vertical: ScrollBar{ id:scrollBar; visible: true}
 		onWidthChanged: adaptContent? control.adaptGrid() : undefined
 		
@@ -97,11 +97,8 @@ Item
 	function adaptGrid()
 	{
 		var amount = parseInt(gridView.width / (itemSize + spacing), 10)
-		var leftSpace = parseInt(gridView.width  - ( amount * (itemSize + 
-spacing) ), 10)
+		var leftSpace = parseInt(gridView.width  - ( amount * (itemSize + spacing) ), 10)
 		var size = parseInt((itemSize + spacing) + (parseInt(leftSpace/amount, 10)), 10)
-		
-		console.log("ADAPTING GRID", amount, leftSpace, size)
 		
 		size = size > itemSize + spacing ? size : itemSize + spacing
 		

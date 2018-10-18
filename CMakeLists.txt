@@ -29,7 +29,7 @@ include(ECMAddQch)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 
 find_package(Qt5 ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE COMPONENTS Qml 
-Sql Core Quick Gui Svg QuickControls2)
+Sql Core Quick Gui Svg QuickControls2 Network DBus)
 ecm_find_qmlmodule(QtGraphicalEffects 1.0)
 
 include_directories(
@@ -66,12 +66,16 @@ set(mauikit_HDRS
 set(fm_SRCS
     src/fm/fm.cpp
     src/fm/fmdb.cpp
+    src/fm/fmmodel.cpp
+    src/fm/fmlist.cpp
     )    
     
 set(fm_HDRS
     src/fm/fm.h
     src/fm/fmh.h
     src/fm/fmdb.h
+    src/fm/fmmodel.h
+    src/fm/fmlist.h
     )
     
 set(tagging_SRCS
@@ -88,12 +92,13 @@ set(tagging_HDRS
 #use dbus on linux, bsd etc, but not andoid and apple stuff
 if(ANDROID)
 
-    find_package(Qt5 REQUIRED COMPONENTS AndroidExtras Xml)
+    find_package(Qt5 REQUIRED COMPONENTS AndroidExtras Xml WebView)
     qt5_add_resources(MauiAndroid_RESOURCES src/android/android.qrc src/android/icons.qrc)
     
     set(MAUIANDROID_LIBS
         Qt5::Xml
         Qt5::AndroidExtras
+        Qt5::WebView
         )
 
     if (NOT EXISTS ${CMAKE_SOURCE_DIR}/src/android/icons/luv-icon-theme/.git)
@@ -106,7 +111,7 @@ if(ANDROID)
         ${MauiAndroid_icons_RESOURCES}
         )
 else()
-
+	find_package(Qt5 REQUIRED COMPONENTS WebEngine)
     find_package(KF5 ${KF5_VERSION} REQUIRED COMPONENTS I18n Notifications 
 Config Service KIO ConfigWidgets)
 
@@ -130,6 +135,7 @@ Config Service KIO ConfigWidgets)
         KF5::Service
         KF5::KIONTLM
         KF5::ConfigWidgets
+        Qt5::WebEngine
         )          
 endif()
 # set(CMAKE_AUTORCC ON)
@@ -175,6 +181,7 @@ target_link_libraries(MauiKit
     Qt5::QuickControls2
     Qt5::Svg
     Qt5::Gui
+    Qt5::Network
     ${MAUIKDE_KF5LIBS}
     ${MAUIANDROID_LIBS}
     )

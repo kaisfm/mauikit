@@ -30,20 +30,33 @@ Rectangle
     id: control
     
     /* Controlc color scheming */
-	ColorScheme {id: colorScheme}
+	ColorScheme 
+	{
+		id: colorScheme
+		textColor: altColorText
+		backgroundColor: altColor
+	}
 	property alias colorScheme : colorScheme
 	/***************************/
 	
-    height: iconSizes.small
-    width: height
-    radius: Math.min(width, height)
-	color: colorScheme.altColor
-    border.color: Qt.darker(color, 1.4)
-    clip: false
+	property bool hovered : false
+    
+    property int size: iconSizes.small
     property string iconName : ""
     property string text : ""
     
-    signal clicked()    
+	signal clicked()    
+	signal pressed()    
+	signal hovered()    
+	signal released()
+	
+	height: size + space.small
+	width: size + space.small
+	radius: Math.min(width, height)
+	color: colorScheme.backgroundColor
+	border.color: colorScheme.borderColor
+	
+	clip: false
     
     Label
     {
@@ -53,7 +66,7 @@ Rectangle
         font.weight: Font.Bold
         font.bold: true
         visible: control.text.length
-        color: colorScheme.altColorText
+        color: colorScheme.textColor
         verticalAlignment: Qt.AlignVCenter
         horizontalAlignment: Qt.AlignHCenter
     }
@@ -63,15 +76,20 @@ Rectangle
         visible: iconName.length 
         anchors.centerIn: parent
         iconName: control.iconName
-        iconColor: colorScheme.altColorText
-        size: iconSizes.small
+        iconColor: colorScheme.textColor
+        size: control.size
         enabled: false
     }
     
     MouseArea
     {
+		id: mouseArea
         anchors.fill: parent
         onClicked: control.clicked() 
-        
+		onPressed: control.pressed() 
+		onReleased: control.released()
+		hoverEnabled: true
+		onEntered: hovered = true
+		onExited: hovered = false
     }
 }

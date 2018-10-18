@@ -32,7 +32,7 @@ Maui.Item
     property var selectedPaths: []
     property alias selectionList : selectionList
     property alias anim : anim
-    property int barHeight : iconSizes.big + (isMobile ? space.big : space.large) + space.medium
+    property int barHeight : iconSizes.big + space.large + space.small
     property color animColor : "black"
 
     property int position: Qt.Horizontal
@@ -66,7 +66,7 @@ Maui.Item
         anchors.fill: parent
         z:-1
         color: colorScheme.altColor
-        radius: 4
+        radius: radiusV
         opacity: 0.6
         border.color: colorScheme.borderColor
 
@@ -108,14 +108,8 @@ Maui.Item
                  else
                      undefined
 
-        Rectangle
+        Maui.Badge
         {
-            height: iconSizes.medium
-            width: iconSizes.medium
-            radius: Math.min(width, height)
-            color: dangerColor
-            border.color: Qt.darker(color, 1.3)
-
             anchors.verticalCenter: parent.top
             anchors.horizontalCenter: parent.left
             Layout.column: if(position === Qt.Horizontal)
@@ -131,19 +125,14 @@ Maui.Item
                             1
                         else
                             undefined
-            Maui.ToolButton
-            {
-                anchors.centerIn: parent
-                iconName: "window-close"
-				iconColor: control.colorScheme.textColor
-                size: iconSizes.small
-                flat: true
-                onClicked:
-                {
-                    selectionList.model.clear()
-                    exitClicked()
-                }
-            }
+                            
+			iconName: "window-close"
+			colorScheme.backgroundColor: dangerColor
+			onClicked:
+			{
+				selectionList.model.clear()
+				exitClicked()
+			}
         }
 
         Item
@@ -193,6 +182,7 @@ Maui.Item
                 delegate: Maui.IconDelegate
                 {
                     id: delegate
+                    
                     anchors.verticalCenter: position === Qt.Horizontal ? parent.verticalCenter : undefined
                     anchors.horizontalCenter: position === Qt.Vertical ? parent.horizontalCenter : undefined
                     height:  iconSizes.big + (isMobile ? space.medium : space.big)
@@ -217,6 +207,7 @@ Maui.Item
 
             }
         }
+        
         Item
         {
             Layout.alignment: if(position === Qt.Horizontal)
@@ -251,13 +242,10 @@ Maui.Item
             }
         }
 
-        Rectangle
+        Maui.Badge
         {
-            height: iconSizes.medium
-            width: iconSizes.medium
-            radius: Math.min(width, height)
-			color: colorScheme.highlightColor
-            border.color: Qt.darker(color, 1.3)
+			colorScheme.backgroundColor: highlightColor			
+                text: selectionList.count
 
             anchors.verticalCenter: parent.top
             anchors.horizontalCenter: parent.right
@@ -273,29 +261,12 @@ Maui.Item
                         else if(position === Qt.Vertical)
                             4
                         else
-                            undefined
-            Label
-            {
-                anchors.fill: parent
-                anchors.centerIn: parent
-                horizontalAlignment: Qt.AlignHCenter
-                verticalAlignment: Qt.AlignVCenter
-                font.pointSize: fontSizes.default
-                font.weight: Font.Bold
-                font.bold: true
-                color: colorScheme.highlightedTextColor
-                text: selectionList.count
-            }
-
-            MouseArea
-            {
-                anchors.fill: parent
-                onClicked:
-                {
-                    selectionList.model.clear()
-                    modelCleared()
-                }
-            }
+                            undefined          
+          onClicked:
+          {
+			  clear()
+			  modelCleared()
+		  }
         }
     }
 
@@ -355,4 +326,6 @@ Maui.Item
         animColor = color
         anim.running = true
     }
+    
+    
 }

@@ -35,12 +35,15 @@ ecm_find_qmlmodule(QtGraphicalEffects 1.0)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}/src
-    
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/tagging
-    ${CMAKE_CURRENT_BINARY_DIR}/src/utils/tagging
-    
+        
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
     ${CMAKE_CURRENT_BINARY_DIR}/src/utils
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/tagging
+    ${CMAKE_CURRENT_BINARY_DIR}/src/utils/tagging 
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/editor
+    ${CMAKE_CURRENT_BINARY_DIR}/src/utils/editor
     
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/syncing
     ${CMAKE_CURRENT_BINARY_DIR}/src/utils/syncing
@@ -63,6 +66,14 @@ set(mauikit_HDRS
     src/utils/handy.h
     )
     
+set(editor_SRCS
+    src/utils/editor/documenthandler.cpp
+    )    
+    
+set(editor_HDRS
+    src/utils/editor/documenthandler.cpp
+    )
+    
 set(fm_SRCS
     src/fm/fm.cpp
     src/fm/fmdb.cpp
@@ -71,8 +82,8 @@ set(fm_SRCS
     )    
     
 set(fm_HDRS
-    src/fm/fm.h
     src/fm/fmh.h
+    src/fm/fm.h
     src/fm/fmdb.h
     src/fm/fmmodel.h
     src/fm/fmlist.h
@@ -152,6 +163,9 @@ ${fm_HDRS}
 ${fm_SRCS}
 ${fm_RESOURCES}
 
+${editor_HDRS}
+${editor_SRCS}
+
 ${tagging_HDRS}
 ${tagging_SRCS}
 ${tagging_RESOURCES}
@@ -166,11 +180,6 @@ ${mauikit_Android_SRCS}
 ${mauikit_KDE_HDRS}
 ${mauikit_KDE_SRCS}
 )
-
-# add_library(FM ${fm_SRCS})
-# add_library(Tagging ${tagging_SRCS})
-
-# add_definitions(-DMAUI_APP)
 
 target_link_libraries(MauiKit
     PUBLIC
@@ -256,5 +265,3 @@ install(EXPORT MauiKitTargets
     DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
     FILE MauiKitTargets.cmake
 )
-
-        

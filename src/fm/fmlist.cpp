@@ -25,6 +25,7 @@ FMList::FMList(QObject *parent) : QObject(parent)
 	connect(fm, &FM::pathModified, this, [this]()
 	{
 		emit this->preListChanged();
+		this->reset();
 		emit this->postListChanged();
 	});
 	
@@ -42,6 +43,10 @@ FMList::~FMList()
 void FMList::setList()
 {
 	this->list = this->fm->getPathContent(this->path, this->hidden, this->onlyDirs, this->filters);
+	
+	this->pathEmpty = this->list.isEmpty() && this->fm->fileExists(this->path);
+	emit this->pathEmptyChanged();
+	
 	this->sortList();
 }
 
@@ -64,12 +69,12 @@ FMH::MODEL_LIST FMList::items() const
 }
 
 
-int FMList::getSortBy() const
+FMH::MODEL_KEY FMList::getSortBy() const
 {
 	return this->sort;
 }
 
-void FMList::setSortBy(const int& key)
+void FMList::setSortBy(const FMH::MODEL_KEY& key)
 {
 	emit this->preListChanged();
 	
@@ -88,7 +93,7 @@ void FMList::sortList()
 	auto key = this->sort;
 	qSort(this->list.begin(), this->list.end(), [key](const FMH::MODEL& e1, const FMH::MODEL& e2) -> bool
 	{
-		auto role = static_cast<FMH::MODEL_KEY>(key); 
+		auto role = key; 
 		
 		switch(role)
 		{
@@ -105,9 +110,17 @@ void FMList::sortList()
 			}
 			case FMH::MODIFIED:
 			case FMH::DATE:
-				if(e1[role] > e2[role])
+			{
+				auto currentTime = QDateTime::currentDateTime();
+				
+				auto date1 = QDateTime::fromString(e1[role], Qt::TextDate); 
+				auto date2 = QDateTime::fromString(e2[role], Qt::TextDate); 
+				
+				if(date1.secsTo(currentTime) <  date2.secsTo(currentTime))
 					return true;
 				break;
+			}
+			
 			default:
 				if(e1[role] < e2[role])
 					return true;
@@ -129,6 +142,10 @@ void FMList::setPath(const QString &path)
 	
 	this->path = path;
 	this->setPreviousPath(this->path);
+	
+	this->pathExists = this->fm->fileExists(path);
+	emit this->pathExistsChanged();
+	
 	this->fm->watchPath(this->path);
 	emit this->pathChanged();
 }
@@ -252,4 +269,12 @@ void FMList::setPreviousPath(const QString& path)
 	this->prevHistory.append(path);
 }
 
+bool FMList::getPathEmpty() const
+{
+	return this->pathEmpty;
+}
 
+bool FMList::getPathExists() const
+{
+	return this->pathExists;
+}

@@ -135,9 +135,10 @@ void FM::watchPath(const QString &path, const bool &clear)
 // return content;
 // }
 
-FMH::MODEL_LIST FM::getPathContent(const QString& path, const bool &hidden, const bool &onlyDirs, const QStringList& filters) const
+FMH::MODEL_LIST FM::getPathContent(const QString& path, const bool &hidden, const bool &onlyDirs, const QStringList& filters)
 {
 	FMH::MODEL_LIST content;
+	
 	if (QFileInfo(path).isDir())
 	{
 		QDir::Filters dirFilter;
@@ -160,9 +161,9 @@ FMH::MODEL_LIST FM::getPathContent(const QString& path, const bool &hidden, cons
 				{FMH::MODEL_KEY::ICON, FMH::getIconName(url)},
 				{FMH::MODEL_KEY::MIME, FMH::getMime(url)},
 				{FMH::MODEL_KEY::LABEL, file.fileName()},
-				{FMH::MODEL_KEY::DATE, file.birthTime().toString()},
+				{FMH::MODEL_KEY::DATE, file.birthTime().toString(Qt::TextDate)},
 				{FMH::MODEL_KEY::SIZE, QString::number(file.size()) /*locale.formattedDataSize(file.size())*/},            
-				{FMH::MODEL_KEY::MODIFIED, file.lastModified().toString()},            
+				{FMH::MODEL_KEY::MODIFIED, file.lastModified().toString(Qt::TextDate)},            
 				{FMH::MODEL_KEY::SUFFIX, file.suffix()},            
 				{FMH::MODEL_KEY::PATH, url},
 				{FMH::MODEL_KEY::THUMBNAIL, url}				

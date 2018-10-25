@@ -22,31 +22,32 @@ import QtQuick.Controls 2.2
 import org.kde.kirigami 2.0 as Kirigami
 import org.kde.mauikit 1.0 as Maui
 import QtQuick.Layouts 1.3
+import FMList 1.0 
 
-Maui.Popup
+Maui.Dialog
 {
 	id: control
 	maxHeight: unit * 500
 	maxWidth: unit * 700
-	
+	page.margins: 0
+	defaultButtons: false
+		
 	property string initPath
 	
-	property var filter: []
+	property var filters: []
 	property bool onlyDirs : false
+	property int sortBy: FMList.MODIFIED
+	
 	property bool multipleSelection: false
+	
 	property bool saveDialog : false
 	property bool openDialog : true
 	
 	property var callback : ({})
+	
 	signal placeClicked (string path)
 	signal selectionReady(var paths)
 	
-	Maui.NewDialog
-	{
-		id: newFolderDialog
-		title: qsTr("New Folder")
-		onFinished: Maui.FM.createDir(browser.currentPath, text)
-	}
 	
 	Maui.Page
 	{
@@ -57,11 +58,8 @@ Maui.Popup
 		rightPadding: leftPadding
 		topPadding: leftPadding
 		bottomPadding: leftPadding
-		headBarExit: true
-		onExit:
-		{
-			closeIt()
-		}
+		headBarExit: false
+		
 		headBarTitleVisible: false
 		headBar.height: headBar.implicitHeight * 1.1
 		
@@ -70,7 +68,7 @@ Maui.Popup
 			id: pathBar
 			height: iconSizes.big
 			width: page.headBar.middleLayout.width * 0.9
-			
+			url: browser.currentPath
 			onPathChanged: browser.openFolder(path)
 			onHomeClicked:
 			{
@@ -82,12 +80,7 @@ Maui.Popup
 			
 			onPlaceClicked: browser.openFolder(path)
 		}
-		
-		headBar.rightContent:  Maui.ToolButton
-		{
-			iconName: "overflow-menu"
-			onClicked: optionsMenu.visible ? optionsMenu.close() : optionsMenu.popup()
-		}
+	
 		
 		Kirigami.PageRow
 		{
@@ -111,6 +104,7 @@ Maui.Popup
 					height: parent.height
 					section.property :  !sidebar.isCollapsed ? "type" : ""
 					section.criteria: ViewSection.FullString
+					
 					section.delegate: Maui.LabelDelegate
 					{
 						id: delegate
@@ -131,7 +125,6 @@ Maui.Popup
 							pageRow.currentIndex = 1
 					}
 					
-					
 					function populate()
 					{
 						sidebar.model.clear()
@@ -141,114 +134,77 @@ Maui.Popup
 						
 						if(places.length > 0)
 							for(var i in places)
+							{	
+								console.log("SIODEBARPLACE: ", places[i].label)
 								sidebar.model.append(places[i])
 								
+							}
 					}
 				}
 				
-				Maui.Page
+				ColumnLayout
 				{
 					id: content
-					leftPadding: Kirigami.Units.devicePixelRatio
-					rightPadding: leftPadding
-					topPadding: leftPadding
-					bottomPadding: leftPadding
-					margins: 0
 					
-					headBarVisible: false
-					footBar.leftContent:  Maui.ToolButton
+					Maui.FileBrowser
 					{
-						id: viewBtn
-						iconName:  browser.detailsView ? "view-list-icons" : "view-list-details"
-						onClicked: browser.switchView()
-					}
-					
-					
-					footBar.middleContent: Row
-					{
-						spacing: space.medium
-						Maui.ToolButton
-						{
-							iconName: "go-previous"
-							onClicked: browser.goBack()
-						}
+						id: browser
+						Layout.fillWidth: true
+						Layout.fillHeight: true
 						
-						Maui.ToolButton
-						{
-							iconName: "go-up"
-							onClicked: browser.goUp()
-						}
+						previewer.parent: ApplicationWindow.overlay
 						
-						Maui.ToolButton
+						selectionMode: control.openDialog && control.multipleSelection
+						list.onlyDirs: control.onlyDirs
+						list.filters: control.filters
+						list.sortBy: control.sortBy
+						
+						onItemClicked: 
 						{
-							iconName: "go-next"
-							onClicked: browser.goNext()
+							if(control.openDialog && !control.multipleSelection)
+								callback([list.get(index).path])
+								
+							openItem(index)
 						}
 					}
 					
-					footBar.rightContent:  [
-					
-					Maui.ToolButton
+					Maui.ToolBar
 					{
-						id: btn
-						iconName: "dialog-ok"
-						iconColor: highlightColor
-						onClicked:
+						id: _bottomBar
+						position: ToolBar.Footer
+						drawBorder: true
+						Layout.fillWidth: true
+						leftContent: TextField
 						{
-							selectionReady(browser.selectedPaths)
-							callback(browser.selectedPaths)
-							close()
-						}
-					}
-					]
-					
-					Menu
-					{
-						id: optionsMenu
-						x: parent.width / 2 - width / 2
-						y: parent.height / 2 - height / 2
-						modal: true
-						focus: true
-						parent: ApplicationWindow.overlay
-						margins: 1
-						padding: 2
-						
-						MenuItem
-						{
-							text: qsTr("Compact mode")
-							onTriggered: sidebar.isCollapsed = !sidebar.isCollapsed
+							visible: saveDialog							
+							width: _bottomBar.middleLayout.width * 0.9
+							placeholderText: qsTr("File name")
 						}
 						
-						MenuItem
+						rightContent: Row
 						{
-							text: qsTr("New folder")
-							onTriggered: newFolderDialog.open()
-						}
-					}
-					
-					ColumnLayout
-					{
-						anchors.fill: parent
-						
-						Browser
-						{
-							id: browser
-							Layout.fillWidth: true
-							Layout.fillHeight: true
-							
-						}
-						
-						Maui.ToolBar
-						{
-							visible: saveDialog
-							position: ToolBar.Footer
-							Layout.fillWidth: true
-							middleContent: TextField
+							spacing: space.big
+							Maui.Button
 							{
-								width: saveDialog.width
-								placeholderText: qsTr("File name")
+								id: _rejectButton
+								colorScheme.textColor: dangerColor
+								colorScheme.borderColor: dangerColor
+								colorScheme.backgroundColor: "transparent"
+								
+								text: rejectText
+								onClicked: control.closeIt()
+								
 							}
-						}
+							
+							Maui.Button
+							{
+								id: _acceptButton			
+								colorScheme.backgroundColor: infoColor
+								colorScheme.textColor: "white"
+								text: acceptText
+								onClicked: control.callback(browser.selectionBar.selectedPaths)
+							}
+						} 
 					}
 				}
 		}

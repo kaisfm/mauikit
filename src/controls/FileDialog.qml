@@ -27,7 +27,7 @@ import FMList 1.0
 Maui.Dialog
 {
 	id: control
-	maxHeight: unit * 500
+	maxHeight: isMobile ? parent.height * 0.95 : unit * 500
 	maxWidth: unit * 700
 	page.margins: 0
 	defaultButtons: false
@@ -35,19 +35,17 @@ Maui.Dialog
 	property string initPath
 	
 	property var filters: []
-	property bool onlyDirs : false
+	property int filterType: FMList.NONE
+	
+	property bool onlyDirs: false
 	property int sortBy: FMList.MODIFIED
 	
-	property bool multipleSelection: false
-	
-	property bool saveDialog : false
-	property bool openDialog : true
-	
+	readonly property var modes : ({OPEN: 0, SAVE: 1})
+	property int mode : modes.OPEN
+
 	property var callback : ({})
 	
-	signal placeClicked (string path)
-	signal selectionReady(var paths)
-	
+	property alias textField: _textField	
 	
 	Maui.Page
 	{
@@ -61,13 +59,14 @@ Maui.Dialog
 		headBarExit: false
 		
 		headBarTitleVisible: false
-		headBar.height: headBar.implicitHeight * 1.1
+		headBar.implicitHeight: pathBar.height + space.big
 		
-		headBar.middleContent: Maui.PathBar
+		headBarItem: Maui.PathBar
 		{
 			id: pathBar
 			height: iconSizes.big
-			width: page.headBar.middleLayout.width * 0.9
+			width: parent.width - space.big
+			anchors.centerIn: parent
 			url: browser.currentPath
 			onPathChanged: browser.openFolder(path)
 			onHomeClicked:
@@ -118,8 +117,10 @@ Maui.Dialog
 					
 					onItemClicked:
 					{
-						browser.openFolder(item.path)
-						placeClicked(item.path)
+						if(item.type === "Tags")
+							browser.openFolder("Tags/"+item.path)
+						else
+							browser.openFolder(item.path)
 						
 						if(pageRow.currentIndex === 0 && !pageRow.wideMode)
 							pageRow.currentIndex = 1
@@ -132,13 +133,12 @@ Maui.Dialog
 						places.push(Maui.FM.getBookmarks())
 						places.push(Maui.FM.getDevices())
 						
+						if(control.mode == modes.OPEN)
+							places.push(Maui.FM.getTags())
+						
 						if(places.length > 0)
 							for(var i in places)
-							{	
-								console.log("SIODEBARPLACE: ", places[i].label)
 								sidebar.model.append(places[i])
-								
-							}
 					}
 				}
 				
@@ -151,20 +151,41 @@ Maui.Dialog
 						id: browser
 						Layout.fillWidth: true
 						Layout.fillHeight: true
-						
+						altToolBars: false
 						previewer.parent: ApplicationWindow.overlay
-						
-						selectionMode: control.openDialog && control.multipleSelection
+						trackChanges: false
+						selectionMode: control.mode === modes.OPEN
 						list.onlyDirs: control.onlyDirs
 						list.filters: control.filters
 						list.sortBy: control.sortBy
+						list.filterType: control.filterType
 						
 						onItemClicked: 
 						{
-							if(control.openDialog && !control.multipleSelection)
-								callback([list.get(index).path])
+							switch(control.mode)
+							{	
+								case modes.OPEN :
+							{								
+									openItem(index)
+									break
+							}
+								case modes.SAVE:
+							{
+								if(Maui.FM.isDir(list.get(index).path))
+									openItem(index)
+								else
+									textField.text = list.get(index).label
+								break
+							}
 								
-							openItem(index)
+							}
+						}
+						
+						onCurrentPathChanged:
+						{
+							for(var i=0; i < sidebar.count; i++)
+								if(currentPath === sidebar.model.get(i).path)
+									sidebar.currentIndex = i
 						}
 					}
 					
@@ -174,11 +195,13 @@ Maui.Dialog
 						position: ToolBar.Footer
 						drawBorder: true
 						Layout.fillWidth: true
-						leftContent: TextField
+						middleContent: Maui.TextField
 						{
-							visible: saveDialog							
+							id: _textField
+							visible: control.mode === modes.SAVE
 							width: _bottomBar.middleLayout.width * 0.9
 							placeholderText: qsTr("File name")
+							
 						}
 						
 						rightContent: Row
@@ -202,7 +225,15 @@ Maui.Dialog
 								colorScheme.backgroundColor: infoColor
 								colorScheme.textColor: "white"
 								text: acceptText
-								onClicked: control.callback(browser.selectionBar.selectedPaths)
+								onClicked: 
+								{
+									if(control.mode === modes.OPEN)
+										control.callback(browser.selectionBar.selectedPaths.length ? browser.selectionBar.selectedPaths : browser.currentPath)
+									else if(control.mode === modes.SAVE)
+										control.callback(browser.currentPath)
+										
+									control.closeIt()
+								}
 							}
 						} 
 					}
@@ -217,10 +248,10 @@ Maui.Dialog
 		
 		if(initPath)
 			browser.openFolder(initPath)
-			else
-				browser.openFolder(browser.currentPath)
+		else
+			browser.openFolder(browser.currentPath)
 				
-				open()
+		open()
 	}
 	
 	function closeIt()

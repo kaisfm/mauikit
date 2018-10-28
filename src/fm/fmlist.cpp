@@ -17,6 +17,7 @@
  */
 
 #include "fmlist.h"
+#include "fm.h"
 
 FMList::FMList(QObject *parent) : QObject(parent)
 {
@@ -24,9 +25,7 @@ FMList::FMList(QObject *parent) : QObject(parent)
 	
 	connect(fm, &FM::pathModified, this, [this]()
 	{
-		emit this->preListChanged();
 		this->reset();
-		emit this->postListChanged();
 	});
 	
 	connect(this, &FMList::pathChanged, this, &FMList::reset);	
@@ -41,8 +40,27 @@ FMList::~FMList()
 }
 
 void FMList::setList()
-{
-	this->list = this->fm->getPathContent(this->path, this->hidden, this->onlyDirs, this->filters);
+{	
+	switch(this->pathType)
+	{
+		case FMH::PATHTYPE_KEY::APPS_PATH:
+			this->list = this->fm->getAppsContent(this->path);
+			break;
+			
+		case FMH::PATHTYPE_KEY::TAGS_PATH:
+			this->list = this->fm->getTagContent(QString(this->path).right(this->path.length()- 1 - this->path.lastIndexOf("/")));
+			break;
+			
+		case FMH::PATHTYPE_KEY::PLACES_PATH:			
+			this->list = this->fm->getPathContent(this->path, this->hidden, this->onlyDirs, this->filters);			
+			break;
+			
+		case FMH::PATHTYPE_KEY::TRASH_PATH:
+		case FMH::PATHTYPE_KEY::DRIVES_PATH:			
+		case FMH::PATHTYPE_KEY::BOOKMARKS_PATH:	
+			this->list = FMH::MODEL_LIST();
+			break;		
+	}
 	
 	this->pathEmpty = this->list.isEmpty() && this->fm->fileExists(this->path);
 	emit this->pathEmptyChanged();
@@ -52,15 +70,48 @@ void FMList::setList()
 
 void FMList::reset()
 {
-	auto conf = FMH::dirConf(this->path+"/.directory");
+	emit this->preListChanged();
 	
-	this->hidden = conf[FMH::MODEL_NAME[FMH::MODEL_KEY::HIDDEN]].toBool();
-	emit this->hiddenChanged();
-	
-	this->preview = conf[FMH::MODEL_NAME[FMH::MODEL_KEY::SHOWTHUMBNAIL]].toBool();
-	emit this->previewChanged();
+	switch(this->pathType)
+	{
+		case FMH::PATHTYPE_KEY::APPS_PATH:
+			this->hidden = false;
+			emit this->hiddenChanged();
+			
+			this->preview = false;
+			emit this->previewChanged();
+			break;
+			
+		case FMH::PATHTYPE_KEY::TAGS_PATH:
+			this->hidden = false;
+			emit this->hiddenChanged();
+			
+			this->preview = true;
+			emit this->previewChanged();
+			break;
+			
+		case FMH::PATHTYPE_KEY::PLACES_PATH:
+		{	
+			auto conf = FMH::dirConf(this->path+"/.directory");
+			
+			this->hidden = conf[FMH::MODEL_NAME[FMH::MODEL_KEY::HIDDEN]].toBool();
+			emit this->hiddenChanged();
+			
+			this->preview = conf[FMH::MODEL_NAME[FMH::MODEL_KEY::SHOWTHUMBNAIL]].toBool();
+			emit this->previewChanged();
+			
+			break;			
+		}
+		
+		case FMH::PATHTYPE_KEY::TRASH_PATH:
+		case FMH::PATHTYPE_KEY::DRIVES_PATH:			
+		case FMH::PATHTYPE_KEY::BOOKMARKS_PATH:			
+			break;		
+	}	
 	
 	this->setList();
+	
+	emit this->postListChanged();
 }
 
 FMH::MODEL_LIST FMList::items() const
@@ -143,11 +194,44 @@ void FMList::setPath(const QString &path)
 	this->path = path;
 	this->setPreviousPath(this->path);
 	
-	this->pathExists = this->fm->fileExists(path);
-	emit this->pathExistsChanged();
+	if(path.startsWith(FMH::PATHTYPE_NAME[FMH::PATHTYPE_KEY::APPS_PATH]+"/"))
+	{
+		this->pathExists = true;
+		this->pathType = FMH::PATHTYPE_KEY::APPS_PATH;
+		this->isBookmark = false;
+		emit this->pathExistsChanged();
+		emit this->pathTypeChanged();
+		emit this->isBookmarkChanged();
+		this->fm->watchPath(QString());
+		
+		
+	}else if(path.startsWith(FMH::PATHTYPE_NAME[FMH::PATHTYPE_KEY::TAGS_PATH]+"/"))
+	{
+		this->pathExists = true;
+		this->isBookmark = false;
+		this->pathType = FMH::PATHTYPE_KEY::TAGS_PATH;
+		emit this->pathExistsChanged();
+		emit this->pathTypeChanged();
+		emit this->isBookmarkChanged();
+		this->fm->watchPath(QString());
+		
+	}else
+	{
+		this->fm->watchPath(this->path);
+		this->isBookmark = this->fm->isBookmark(this->path);
+		this->pathExists = FMH::fileExists(this->path);
+		this->pathType = FMH::PATHTYPE_KEY::PLACES_PATH;
+		emit this->pathExistsChanged();
+		emit this->pathTypeChanged();
+		emit this->isBookmarkChanged();
+	}	
 	
-	this->fm->watchPath(this->path);
 	emit this->pathChanged();
+}
+
+FMH::PATHTYPE_KEY FMList::getPathType() const
+{
+	return this->pathType;
 }
 
 QStringList FMList::getFilters() const
@@ -167,6 +251,23 @@ void FMList::setFilters(const QStringList &filters)
 	emit this->postListChanged();	
 }
 
+FMH::FILTER_TYPE FMList::getFilterType() const
+{
+	return this->filterType;
+}
+
+void FMList::setFilterType(const FMH::FILTER_TYPE& type)
+{
+	this->filterType = type;
+	
+	this->filters = FMH::FILTER_LIST[this->filterType];	
+	
+	emit this->preListChanged();
+	emit this->filtersChanged();
+	emit this->filterTypeChanged();
+	emit this->postListChanged();	
+}
+
 bool FMList::getHidden() const
 {
 	return this->hidden;
@@ -178,7 +279,9 @@ void FMList::setHidden(const bool &state)
 		return;
 	
 	this->hidden = state;
-	FMH::setDirConf(this->path+"/.directory", "Settings", "HiddenFilesShown", this->hidden);
+	
+	if(this->pathType == FMH::PATHTYPE_KEY::PLACES_PATH && this->trackChanges)
+		FMH::setDirConf(this->path+"/.directory", "Settings", "HiddenFilesShown", this->hidden);
 	
 	emit this->preListChanged();
 	emit this->hiddenChanged();
@@ -196,7 +299,9 @@ void FMList::setPreview(const bool &state)
 		return;
 	
 	this->preview = state;
-	FMH::setDirConf(this->path+"/.directory", "MAUIFM", "ShowThumbnail", this->preview);
+	
+	if(this->pathType == FMH::PATHTYPE_KEY::PLACES_PATH && this->trackChanges)
+		FMH::setDirConf(this->path+"/.directory", "MAUIFM", "ShowThumbnail", this->preview);
 	
 	emit this->previewChanged();
 }
@@ -230,6 +335,11 @@ QVariantMap FMList::get(const int &index) const
 		res.insert(FMH::MODEL_NAME[key], model[key]);
 	
 	return res;
+}
+
+void FMList::refresh()
+{
+	emit this->pathChanged();
 }
 
 QString FMList::getParentPath() const
@@ -278,3 +388,41 @@ bool FMList::getPathExists() const
 {
 	return this->pathExists;
 }
+
+bool FMList::getTrackChanges() const
+{
+	return this->trackChanges;
+}
+
+void FMList::setTrackChanges(const bool& value)
+{
+	if(this->trackChanges == value)
+		return;
+	
+	this->trackChanges = value;
+	emit this->trackChangesChanged();
+}
+
+bool FMList::getIsBookmark() const
+{
+	return this->isBookmark;
+}
+
+void FMList::setIsBookmark(const bool& value)
+{
+	if(this->isBookmark == value)
+		return;
+	
+	if(this->pathType != FMH::PATHTYPE_KEY::PLACES_PATH)
+		return;
+	
+	this->isBookmark = value;
+	
+	if(value)
+		this->fm->bookmark(this->path);
+	else
+		this->fm->removeBookmark(this->path);
+	
+	emit this->isBookmarkChanged();
+}
+

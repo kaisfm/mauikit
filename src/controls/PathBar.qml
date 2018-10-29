@@ -59,6 +59,7 @@ Maui.Item
         Maui.TextField
         {
             id: entry
+            text: control.url
             height: parent.height
             Layout.fillHeight: true
             Layout.fillWidth: true
@@ -205,17 +206,10 @@ Maui.Item
         pathBarList.currentIndex = pathBarList.count-1
         pathBarList.positionViewAtEnd()
     }
-    
-    function position(index)
-    {
-        //        rollList.currentIndex = index
-        //        rollList.positionViewAtIndex(index, ListView.Center)
-    }
-    
+     
     function showEntryBar()
     {
         pathEntry.visible = !pathEntry.visible
-        entry.text = browser.currentPath
         pathCrumbs.visible = !pathCrumbs.visible
     }
 }

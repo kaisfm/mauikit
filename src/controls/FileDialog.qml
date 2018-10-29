@@ -95,51 +95,13 @@ Maui.Dialog
 			defaultColumnWidth: sidebarWidth
 				interactive: currentIndex === 1
 				
-				Maui.SideBar
+				Maui.PlacesSidebar
 				{
 					id: sidebar
-					focus: true
 					width: isCollapsed ? iconSize*2 : parent.width
 					height: parent.height
-					section.property :  !sidebar.isCollapsed ? "type" : ""
-					section.criteria: ViewSection.FullString
-					
-					section.delegate: Maui.LabelDelegate
-					{
-						id: delegate
-						label: section
-						labelTxt.font.pointSize: fontSizes.big
 						
-						isSection: true
-						boldLabel: true
-						height: toolBarHeightAlt
-					}
-					
-					onItemClicked:
-					{
-						if(item.type === "Tags")
-							browser.openFolder("Tags/"+item.path)
-						else
-							browser.openFolder(item.path)
-						
-						if(pageRow.currentIndex === 0 && !pageRow.wideMode)
-							pageRow.currentIndex = 1
-					}
-					
-					function populate()
-					{
-						sidebar.model.clear()
-						var places = Maui.FM.getDefaultPaths()
-						places.push(Maui.FM.getBookmarks())
-						places.push(Maui.FM.getDevices())
-						
-						if(control.mode == modes.OPEN)
-							places.push(Maui.FM.getTags())
-						
-						if(places.length > 0)
-							for(var i in places)
-								sidebar.model.append(places[i])
-					}
+					onPlaceClicked: browser.openFolder(path)
 				}
 				
 				ColumnLayout
@@ -165,26 +127,25 @@ Maui.Dialog
 							switch(control.mode)
 							{	
 								case modes.OPEN :
-							{								
+								{								
 									openItem(index)
 									break
-							}
+								}
 								case modes.SAVE:
-							{
-								if(Maui.FM.isDir(list.get(index).path))
-									openItem(index)
-								else
-									textField.text = list.get(index).label
-								break
-							}
-								
+								{
+									if(Maui.FM.isDir(list.get(index).path))
+										openItem(index)
+									else
+										textField.text = list.get(index).label
+									break
+								}				
 							}
 						}
 						
 						onCurrentPathChanged:
 						{
 							for(var i=0; i < sidebar.count; i++)
-								if(currentPath === sidebar.model.get(i).path)
+								if(currentPath === sidebar.list.get(i).path)
 									sidebar.currentIndex = i
 						}
 					}
@@ -219,22 +180,7 @@ Maui.Dialog
 								
 							}
 							
-							Maui.Button
-							{
-								id: _acceptButton			
-								colorScheme.backgroundColor: infoColor
-								colorScheme.textColor: "white"
-								text: acceptText
-								onClicked: 
-								{
-									if(control.mode === modes.OPEN)
-										control.callback(browser.selectionBar.selectedPaths.length ? browser.selectionBar.selectedPaths : browser.currentPath)
-									else if(control.mode === modes.SAVE)
-										control.callback(browser.currentPath)
-										
-									control.closeIt()
-								}
-							}
+							
 						} 
 					}
 				}
@@ -244,13 +190,10 @@ Maui.Dialog
 	function show(cb)
 	{
 		callback = cb
-		sidebar.populate()
-		
 		if(initPath)
 			browser.openFolder(initPath)
 		else
 			browser.openFolder(browser.currentPath)
-				
 		open()
 	}
 	
@@ -259,5 +202,4 @@ Maui.Dialog
 		browser.clearSelection()
 		close()
 	}
-	
 }

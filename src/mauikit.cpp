@@ -24,8 +24,12 @@
 
 #include "fm.h"
 #include "fmh.h"
+
 #include "fmmodel.h"
 #include "fmlist.h"
+
+#include "placeslist.h"
+#include "placesmodel.h"
 
 #include "handy.h"
 #include "documenthandler.h"
@@ -120,13 +124,15 @@ void MauiKit::registerTypes(const char *uri)
 #endif
 	
 // 	qmlRegisterUncreatableMetaObject(FMH::staticMetaObject, "FMH", 1, 0, "KEY", "Error");	
+	qmlRegisterType<PlacesList>("PlacesList", 1, 0, "PlacesList");
+	qmlRegisterType<PlacesModel>("PlacesModel", 1, 0, "PlacesModel");
 	qmlRegisterType<FMModel>("FMModel", 1, 0, "FMModel");
 	qmlRegisterType<FMList>("FMList", 1, 0, "FMList");
 	qmlRegisterType<DocumentHandler>("DocumentHandler", 1, 0, "DocumentHandler");
 	
 	qmlRegisterSingletonType<FM>(uri, 1, 0, "FM",
                                       [](QQmlEngine*, QJSEngine*) -> QObject* {
-		auto fm = new FM;
+		auto fm = FM::getInstance();
         return fm;
     });
     

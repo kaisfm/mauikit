@@ -34,18 +34,34 @@
 #include "mauikde.h"
 #endif
 
-FM::FM(QObject *parent) : FMDB(parent)
+
+FM *FM::instance = nullptr;
+
+FM* FM::getInstance()
 {
-	this->watcher = new QFileSystemWatcher(this);
-	connect(watcher, &QFileSystemWatcher::directoryChanged, [this](const QString &path)
+	if(!instance)
 	{
-		emit pathModified(path);		
-	});
-	
-	this->tag = Tagging::getInstance("MAUIFM","1.0", "org.kde.maui","MauiKit File Manager");
+		instance = new FM();
+		qDebug() << "getInstance(): First instance\n";
+		instance->tag = Tagging::getInstance("MAUIFM","1.0", "org.kde.maui","MauiKit File Manager");
+		
+		return instance;
+	} else
+	{
+		qDebug()<< "getInstance(): previous instance\n";
+		return instance;
+	}
 }
 
-FM::~FM() {}
+FM::FM(QObject *parent) : FMDB(parent)
+{
+	
+}
+
+FM::~FM() 
+{
+// 	delete this->instance;
+}
 
 FMH::MODEL_LIST FM::packItems(const QStringList &items, const QString &type)
 {
@@ -86,65 +102,11 @@ QVariantList FM::get(const QString &queryTxt)
 	return mapList;
 }
 
-void FM::watchPath(const QString &path, const bool &clear)
-{
-	if(!watcher->directories().isEmpty() && clear)
-		watcher->removePaths(watcher->directories());
-	
-	if(path.isEmpty())		
-		return;
-	
-	watcher->addPath(path);
-}
-
-// QVariantList FM::getPathContent(const QString &path, const bool &onlyDirs, const QStringList &filters)
-// {
-//     QVariantList content;
-//     if (QFileInfo(path).isDir())
-//     {
-//         QDir::Filters dirFilter;
-// 
-//         auto conf = dirConf(path+"/.directory");
-// 
-//         dirFilter = ( onlyDirs ? QDir::AllDirs | QDir::NoDotDot | QDir::NoDot :
-//                                  QDir::Files | QDir::AllDirs | QDir::NoDotDot | QDir::NoDot);
-//         if(!conf.isEmpty())
-//         {
-//             auto hidden = conf[FMH::MODEL_NAME[FMH::MODEL_KEY::HIDDEN]].toBool();
-//             if(hidden)
-//                 dirFilter = dirFilter | QDir::Hidden | QDir::System;
-//         }
-// 
-//         QDirIterator it (path, filters,  dirFilter, QDirIterator::NoIteratorFlags);
-//         while (it.hasNext())
-//         {
-//             auto url = it.next();
-//             QFileInfo file(url);
-// 			QLocale locale;
-//             auto item = QVariantMap {
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::ICON], FMH::getIconName(url)},
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::MIME], FMH::getMime(url)},
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::LABEL], file.fileName()},
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::DATE], file.birthTime().toString()},
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::SIZE], locale.formattedDataSize(file.size())},            
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::MODIFIED], file.lastModified().toString()},            
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::SUFFIX], file.suffix()},            
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::PATH], url},
-//             {FMH::MODEL_NAME[FMH::MODEL_KEY::THUMBNAIL], url}
-//         };
-// 
-//         content << item;
-//         emit this->itemReady(item);
-//     }
-// }
-// return content;
-// }
-
 FMH::MODEL_LIST FM::getPathContent(const QString& path, const bool &hidden, const bool &onlyDirs, const QStringList& filters)
 {
 	FMH::MODEL_LIST content;
 	
-	if (QFileInfo(path).isDir())
+	if (FM::isDir(path))
 	{
 		QDir::Filters dirFilter;
 		
@@ -159,7 +121,7 @@ FMH::MODEL_LIST FM::getPathContent(const QString& path, const bool &hidden, cons
 		{
 			auto url = it.next();			
 			content << FMH::getFileInfoModel(url);
-		}
+		}		
 	}
 	
 	return content;
@@ -249,7 +211,7 @@ FMH::MODEL_LIST FM::getTags(const int &limit)
 	Q_UNUSED(limit);
 	
 	FMH::MODEL_LIST data;
-
+	
 	if(this->tag)
 	{
 		for(auto tag : this->tag->getUrlsTags(false))
@@ -331,22 +293,38 @@ bool FM::isApp(const QString& path)
 
 bool FM::bookmark(const QString &path)
 {
-	QFileInfo file (path);
+	if(FMH::defaultPaths.contains(path))
+		return false;
 	
+	if(!FMH::fileExists(path))
+		return false;
+	
+	QFileInfo file (path);
 	QVariantMap bookmark_map {
 		{FMH::MODEL_NAME[FMH::MODEL_KEY::PATH], path},
 		{FMH::MODEL_NAME[FMH::MODEL_KEY::LABEL], file.baseName()},
 		{FMH::MODEL_NAME[FMH::MODEL_KEY::DATE], QDateTime::currentDateTime()}
 	};
 	
-	qDebug()<< bookmark_map;
-	return this->insert(FMH::TABLEMAP[FMH::TABLE::BOOKMARKS], bookmark_map);
+	if(this->insert(FMH::TABLEMAP[FMH::TABLE::BOOKMARKS], bookmark_map))
+	{
+		emit this->bookmarkInserted(path);
+		return true;
+	}
+	
+	return false;
 }
 
 bool FM::removeBookmark(const QString& path)
 {
 	FMH::DB data = {{FMH::MODEL_KEY::PATH, path}};
-	return this->remove(FMH::TABLEMAP[FMH::TABLE::BOOKMARKS], data);
+	if(this->remove(FMH::TABLEMAP[FMH::TABLE::BOOKMARKS], data))
+	{		
+		emit this->bookmarkRemoved(path);
+		return true;
+	}
+	
+	return false;
 }
 
 bool FM::isBookmark(const QString& path)

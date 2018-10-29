@@ -34,14 +34,13 @@ ListView
 
 	property color bgColor: isCollapsed ? colorScheme.altColor : colorScheme.backgroundColor
 	property color fgColor : isCollapsed ? colorScheme.altColorText : colorScheme.textColor
-    property string downloadBadget : ""
 
     property int iconSize : isMobile ? (isCollapsed || isWide ? iconSizes.medium : iconSizes.big) :
                                        iconSizes.small
     property bool collapsable : true
     property bool isCollapsed : false
 
-    signal itemClicked(var item)
+    signal itemClicked(int index)
 
     keyNavigationEnabled: true
     clip: true
@@ -75,7 +74,7 @@ ListView
             onClicked:
             {
                 control.currentIndex = index
-                itemClicked(control.model.get(index))
+                itemClicked(index)
             }
         }
     }

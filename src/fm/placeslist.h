@@ -22,32 +22,46 @@
 #include <QObject>
 #include "fmh.h"
 
+class QFileSystemWatcher;
 class FM;
 class PlacesList : public QObject
 {
     Q_OBJECT    
-    typedef QVector<FMH::PATHTYPE_KEY> Group;
+//     typedef QList<int> Group;
 	
-	Q_PROPERTY(Group groups READ getGroups WRITE setGroups NOTIFY groupsChanged())	
+	Q_PROPERTY(QList<int> groups READ getGroups WRITE setGroups NOTIFY groupsChanged())	
 
 public:  
+// 	Q_ENUMS(FMH::PATHTYPE_KEY)
+	
 	PlacesList(QObject *parent = nullptr);
     ~PlacesList();
 	
 	FMH::MODEL_LIST items() const;
 	
-	Group getGroups() const;
-	void setGroups(const Group &value);
+	QList<int> getGroups() const;
+	void setGroups(const QList<int> &value);
 	
 protected:
 	void setList();
 	void reset();
 	
+public slots:
+	QVariantMap get(const int &index) const;
+	void refresh();
+	void clearBadgeCount(const int &index);
+	
 private:
 	FM *fm;
 	FMH::MODEL_LIST list;
+	QHash<QString, int> count;
+	QList<int> groups;
 	
-	Group groups;
+	QFileSystemWatcher *watcher;
+	void watchPath(const QString &path);
+	
+	void setCount();
+	int indexOf(const QString &path);
 	
 signals:
 	void groupsChanged();
@@ -61,5 +75,4 @@ signals:
 	void postListChanged();
 	
 };
-
 #endif // PLACESLIST_H

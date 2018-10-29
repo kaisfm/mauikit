@@ -412,21 +412,12 @@ Maui.Page
 				onTriggered:
 				{
 					group = checked
-					group ? groupBy() : undefined
+					group ? groupBy() : browser.section.property = ""
 				}
 			}
 		}
 	}
 	]
-	
-	//    footBar.leftContent: Maui.ToolButton
-	//    {
-	//        id: viewBtn
-	//        iconColor: floatingBar ? altColorText : textColor
-	
-	//        iconName:  browser.detailsView ? "view-list-icons" : "view-list-details"
-	//        onClicked: browser.switchView()
-	//    }
 	
 	footBar.middleContent: Row
 	{
@@ -541,6 +532,9 @@ Maui.Page
 	
 	function populate(path)
 	{
+		if(!path.length)
+			return; 
+		
 		setPath(path)
 		
 		if(currentPathType === FMList.PLACES_PATH && trackChanges)
@@ -586,7 +580,7 @@ Maui.Page
 	function clearSelection()
 	{
 		clean()
-		selectionMode = false
+// 		selectionMode = false
 	}
 	
 	function clean()
@@ -745,6 +739,5 @@ Maui.Page
 		
 		browser.section.property = prop
 		browser.section.criteria = criteria
-		
 	}
 }

@@ -54,14 +54,6 @@ void MauiKit::registerTypes(const char *uri)
 {
     Q_ASSERT(uri == QLatin1String("org.kde.mauikit"));
 
-#ifdef Q_OS_ANDROID
-    QIcon::setThemeSearchPaths({":/icons/luv-icon-theme"});
-    QIcon::setThemeName("Luv");
-    QQuickStyle::setStyle(":/style");
-#else
-    QQuickStyle::setStyle("maui-style");
-#endif
-
     qmlRegisterSingletonType(componentUrl(QStringLiteral("Style.qml")), uri, 1, 0, "Style");
     qmlRegisterType(componentUrl(QStringLiteral("ToolBar.qml")), uri, 1, 0, "ToolBar");
     qmlRegisterType(componentUrl(QStringLiteral("ToolButton.qml")), uri, 1, 0, "ToolButton");
@@ -103,19 +95,18 @@ void MauiKit::registerTypes(const char *uri)
 	qmlRegisterType(componentUrl(QStringLiteral("FilePreviewer.qml")), uri, 1, 0, "FilePreviewer");
 	qmlRegisterType(componentUrl(QStringLiteral("FileDialog.qml")), uri, 1, 0, "FileDialog");
     qmlRegisterType(componentUrl(QStringLiteral("PathBar.qml")), uri, 1, 0, "PathBar");
-	
+    qmlRegisterType(componentUrl(QStringLiteral("SyncDialog.qml")), uri, 1, 0, "SyncDialog");
+
 	/** EDITOR CONTROLS **/
 	qmlRegisterType(componentUrl(QStringLiteral("Editor.qml")), uri, 1, 0, "Editor");
 	
 #ifdef Q_OS_ANDROID
-	qmlRegisterType(componentUrl(QStringLiteral("SyncDialogA.qml")), uri, 1, 0, "SyncDialog");	
     qmlRegisterSingletonType<MAUIAndroid>(uri, 1, 0, "Android",
                                           [](QQmlEngine*, QJSEngine*) -> QObject* {
         MAUIAndroid *android = new MAUIAndroid;
         return android;
     });
 #else
-	qmlRegisterType(componentUrl(QStringLiteral("SyncDialog.qml")), uri, 1, 0, "SyncDialog");	
 	qmlRegisterType(componentUrl(QStringLiteral("Terminal.qml")), uri, 1, 0, "Terminal");	
 	
 	qmlRegisterSingletonType<MAUIKDE>(uri, 1, 0, "KDE",
@@ -142,8 +133,16 @@ void MauiKit::registerTypes(const char *uri)
                                       [](QQmlEngine*, QJSEngine*) -> QObject* {
        auto handy = new Handy;
         return handy;
-    });
-
+    });	 
+	 
+	 #ifdef Q_OS_ANDROID
+	 QIcon::setThemeSearchPaths({":/icons/luv-icon-theme"});
+	 QIcon::setThemeName("Luv");
+	 QQuickStyle::setStyle(":/style");
+// 	 #else
+// 	 QQuickStyle::setStyle("maui-style");
+	 #endif
+	 
     qmlProtectModule(uri, 1);
 }
 

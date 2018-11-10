@@ -34,14 +34,17 @@ class FMList : public QObject
 	Q_PROPERTY(bool onlyDirs READ getOnlyDirs WRITE setOnlyDirs NOTIFY onlyDirsChanged())
 	Q_PROPERTY(bool preview READ getPreview WRITE setPreview NOTIFY previewChanged())
 	Q_PROPERTY(bool isBookmark READ getIsBookmark WRITE setIsBookmark NOTIFY isBookmarkChanged())
+	Q_PROPERTY(bool contentReady READ getContentReady NOTIFY contentReadyChanged())
 	
 	Q_PROPERTY(QStringList filters READ getFilters WRITE setFilters NOTIFY filtersChanged())
 	Q_PROPERTY(FMH::FILTER_TYPE filterType READ getFilterType WRITE setFilterType NOTIFY filterTypeChanged())
 	
-	Q_PROPERTY(FMH::MODEL_KEY sortBy READ getSortBy WRITE setSortBy NOTIFY sortByChanged())
-	Q_PROPERTY(FMH::PATHTYPE_KEY pathType READ getPathType NOTIFY pathTypeChanged())
+    Q_PROPERTY(FMH::MODEL_KEY sortBy READ getSortBy WRITE setSortBy NOTIFY sortByChanged())
+    Q_PROPERTY(bool foldersFirst READ getFoldersFirst WRITE setFoldersFirst NOTIFY foldersFirstChanged())
+    Q_PROPERTY(FMH::PATHTYPE_KEY pathType READ getPathType NOTIFY pathTypeChanged())
 	
 	Q_PROPERTY(bool trackChanges READ getTrackChanges WRITE setTrackChanges NOTIFY trackChangesChanged())
+	Q_PROPERTY(bool saveDirProps READ getSaveDirProps WRITE setSaveDirProps NOTIFY saveDirPropsChanged())	
 	
 	Q_PROPERTY(bool pathExists READ getPathExists NOTIFY pathExistsChanged())
 	Q_PROPERTY(bool pathEmpty READ getPathEmpty NOTIFY pathEmptyChanged())
@@ -83,7 +86,7 @@ class FMList : public QObject
 		bool getOnlyDirs() const;
 		void setOnlyDirs(const bool &state);
 		
-		QString getParentPath() const;
+		QString getParentPath();
 		
 		QString getPreviousPath();
 		void setPreviousPath(const QString &path);
@@ -99,16 +102,27 @@ class FMList : public QObject
 		
 		bool getIsBookmark() const;
 		void setIsBookmark(const bool &value);
+
+        bool getFoldersFirst() const;
+        void setFoldersFirst(const bool &value);
+		
+		bool getSaveDirProps() const;
+		void setSaveDirProps(const bool &value);
+		
+		bool getContentReady() const;
+		void setContentReady(const bool &value);
 		
 private:
 	FM *fm;
 	QFileSystemWatcher *watcher;
+	void pre();
+	void pos();
 	
 	void reset();
 	void setList();
 	void sortList();
 	void watchPath(const QString &path, const bool &clear = true);
-	
+	void search(const QString &query, const QString &path, const bool &hidden = false, const bool &onlyDirs = false, const QStringList &filters = QStringList());
 	FMH::MODEL_LIST list = {{}};
 	
 	QString path = QString();
@@ -121,6 +135,9 @@ private:
 	bool pathEmpty = true;
 	bool trackChanges = true;
 	bool isBookmark = false;
+    bool foldersFirst = false;
+	bool saveDirProps = false;
+	bool contentReady = false;
 	
 	FMH::MODEL_KEY sort = FMH::MODEL_KEY::MODIFIED;
 	FMH::FILTER_TYPE filterType = FMH::FILTER_TYPE::NONE;
@@ -144,6 +161,9 @@ signals:
 	void sortByChanged();
 	void trackChangesChanged();
 	void isBookmarkChanged();
+    void foldersFirstChanged();
+	void saveDirPropsChanged();
+	void contentReadyChanged();
 	
 	void pathEmptyChanged();
 	void pathExistsChanged();

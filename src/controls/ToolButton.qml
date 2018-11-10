@@ -26,7 +26,7 @@ import "private"
 ToolButton
 {
     id: control
-    
+    focusPolicy: Qt.NoFocus
     /* Controlc color scheming */
 	ColorScheme 
 	{
@@ -39,6 +39,7 @@ ToolButton
 
     property bool isMask:  true
     property string iconName: ""
+    property string iconFallback: ""
     property int size: iconSize
     property color iconColor: colorScheme.textColor
     property bool anim: false
@@ -54,10 +55,11 @@ ToolButton
     height: control.visible ? (control.display === ToolButton.IconOnly ? size + space.medium : implicitHeight) : 0
     width: control.visible ? (control.display === ToolButton.IconOnly ? height : implicitWidth) : 0
     
-    icon.name:  iconName
-    icon.width:  size
-    icon.height: size
-    icon.color: !isMask ? "transparent" :  (down || pressed) ? colorScheme.highlightColor : iconColor
+    icon.name:  control.iconName
+    icon.source: control.iconFallback
+    icon.width:  control.size
+    icon.height: control.size
+    icon.color: !control.isMask ? "transparent" :  (down || pressed) ? colorScheme.highlightColor : iconColor
 
     onClicked: if(anim) animIcon.running = true
 
@@ -70,8 +72,10 @@ ToolButton
     
     background: Rectangle
     {
-		implicitHeight: control.visible? control.size : 0
-		implicitWidth: control.visible? control.size : 0
+		implicitHeight: control.visible? iconSizes.medium : 0
+		implicitWidth: control.visible? iconSizes.medium : 0
+		
+		anchors.centerIn: control
      color: /*(down || pressed || checked) */ checked && enabled  ? 
      Qt.lighter(colorScheme.highlightColor, 1.2) : colorScheme.backgroundColor
      radius: unit * 3

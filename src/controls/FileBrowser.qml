@@ -20,6 +20,7 @@ Maui.Page
 	/***************************/
 	
 	property alias trackChanges: modelList.trackChanges
+	property alias saveDirProps: modelList.saveDirProps
 	
 	property string currentPath: Maui.FM.homePath()
 	
@@ -37,7 +38,7 @@ Maui.Page
 	property alias selectionBar : selectionBarLoader.item
 	
 	property alias model : folderModel
-	property alias list : modelList	
+	property alias list : modelList
 	property alias browser : viewLoader.item
 	
 	property alias previewer : previewer
@@ -74,9 +75,9 @@ Maui.Page
 			title: qsTr("Delete files?")
 			message: qsTr("If you are sure you want to delete the files click on Accept, otherwise click on Cancel")
 			onRejected: close()
-			onAccepted: 
+			onAccepted:
 			{
-				if(paths.length > 0)
+				if(control.selectionBar && control.selectionBar.visible)
 				{
 					control.selectionBar.clear()
 					control.selectionBar.animate("red")
@@ -85,8 +86,8 @@ Maui.Page
 				control.remove(paths)
 				close()
 			}
-		}	
-	}	
+		}
+	}
 	
 	Component
 	{
@@ -95,7 +96,7 @@ Maui.Page
 		Maui.NewDialog
 		{
 			title: "Create new folder"
-			onFinished: Maui.FM.createDir(control.currentPath, text)		
+			onFinished: Maui.FM.createDir(control.currentPath, text)
 		}
 	}
 	
@@ -128,7 +129,7 @@ Maui.Page
 	Component
 	{
 		id: shareDialogComponent
-		Maui.ShareDialog {}	
+		Maui.ShareDialog {}
 	}
 	
 	BrowserMenu
@@ -153,6 +154,7 @@ Maui.Page
 		id: modelList
 		path: currentPath
 		onSortByChanged: if(group) groupBy()
+		onContentReadyChanged: console.log("CONTENT READY?", contentReady)
 	}
 	
 	FileMenu
@@ -162,22 +164,22 @@ Maui.Page
 		onCopyClicked:
 		{
 			if(paths.length)
-			{	
+			{
 				if(control.selectionBar)
-					control.selectionBar.animate("#6fff80")				
-				
-				control.copy(paths)
-			}	
+					control.selectionBar.animate("#6fff80")
+					
+					control.copy(paths)
+			}
 		}
 		onCutClicked:
 		{
 			if(paths.length)
-			{	
+			{
 				if(control.selectionBar)
-					control.selectionBar.animate("#fff44f")				
-				
-				control.cut(paths)
-			}	
+					control.selectionBar.animate("#fff44f")
+					
+					control.cut(paths)
+			}
 		}
 		
 		onRenameClicked:
@@ -205,22 +207,22 @@ Maui.Page
 		//            })
 		//        }
 		
-		onRemoveClicked: 
+		onRemoveClicked:
 		{
 			dialogLoader.sourceComponent= removeDialogComponent
 			dialog.paths = paths
 			dialog.open()
 		}
 		
-		onShareClicked: 
+		onShareClicked:
 		{
 			if(isAndroid)
 				Maui.Android.shareDialog(paths)
-			else
-			{
-				dialogLoader.sourceComponent= shareDialogComponent
-				dialog.show(paths)
-			}
+				else
+				{
+					dialogLoader.sourceComponent= shareDialogComponent
+					dialog.show(paths)
+				}
 		}
 	}
 	
@@ -235,6 +237,7 @@ Maui.Page
 			showEmblem: currentPathType !== FMList.APPS_PATH && showEmblems
 			rightEmblem: isMobile ? "document-share" : ""
 			leftEmblem: "emblem-added"
+			showDetailsInfo: true
 			// 			itemSize: thumbnailsSize
 			model: folderModel
 			section.delegate: Maui.LabelDelegate
@@ -273,19 +276,19 @@ Maui.Page
 		
 		onItemDoubleClicked: control.itemDoubleClicked(index)
 		
-		onItemRightClicked: 
+		onItemRightClicked:
 		{
 			itemMenu.show([modelList.get(index).path])
 			control.itemRightClicked(index)
 		}
 		
-		onLeftEmblemClicked: 
+		onLeftEmblemClicked:
 		{
 			control.addToSelection(modelList.get(index), true)
 			control.itemLeftEmblemClicked(index)
 		}
 		
-		onRightEmblemClicked: 
+		onRightEmblemClicked:
 		{
 			isAndroid ? Maui.Android.shareDialog([modelList.get(index).path]) : shareDialog.show([modelList.get(index).path])
 			control.itemRightEmblemClicked(index)
@@ -303,26 +306,46 @@ Maui.Page
 		onAreaRightClicked: browserMenu.show()
 	}
 	
-	focus: true	
-
+	focus: true
+	
 	Maui.Holder
 	{
 		id: holder
-		anchors.fill : parent			
+		anchors.fill : parent
 		z: -1
-		visible: !modelList.pathExists || modelList.pathEmpty
-		emoji: modelList.pathExists ? "qrc:/assets/MoonSki.png" : "qrc:/assets/ElectricPlug.png"
-		isMask: false
-		title : modelList.pathExists && modelList.pathEmpty ?  "Folder is empty!" : "Folder doesn't exists!"
-		body: modelList.pathExists && modelList.pathEmpty? "You can add new files to it" : "Create Folder?"
-		emojiSize: iconSizes.huge
-		
-		onActionTriggered: 
-		{
-			Maui.FM.createDir(control.currentPath.slice(0, control.currentPath.lastIndexOf("/")), control.currentPath.split("/").pop())
-			
-			control.openFolder(modelList.parentPath)
-		}		
+		visible: !modelList.pathExists || modelList.pathEmpty || !modelList.contentReady
+		emoji: if(modelList.pathExists && modelList.pathEmpty)
+		"qrc:/assets/MoonSki.png" 
+		else if(!modelList.pathExists)
+			"qrc:/assets/ElectricPlug.png"
+			else if(!modelList.contentReady)
+				"qrc:/assets/animat-rocket-color.gif"
+				isGif: !modelList.contentReady			
+				isMask: false
+				title : if(modelList.pathExists && modelList.pathEmpty)
+				"Folder is empty!"
+				else if(!modelList.pathExists)
+					"Folder doesn't exists!"
+					else if(!modelList.contentReady)
+						"Loading content!"
+						
+						body: if(modelList.pathExists && modelList.pathEmpty)
+						"You can add new files to it"
+						else if(!modelList.pathExists)
+							"Create Folder?"
+							else if(!modelList.contentReady)
+								"Almost ready!"        
+								
+								emojiSize: iconSizes.huge
+								
+								onActionTriggered:
+								{
+									if(!modelList.pathExists)
+									{
+										Maui.FM.createDir(control.currentPath.slice(0, control.currentPath.lastIndexOf("/")), control.currentPath.split("/").pop())
+										control.openFolder(modelList.parentPath)				
+									}
+								}
 	}
 	
 	Keys.onSpacePressed: previewer.show(modelList.get(browser.currentIndex).path)
@@ -330,9 +353,8 @@ Maui.Page
 	floatingBar: true
 	footBarOverlap: true
 	headBarExit: false
-	headBarVisible: currentPathType !== FMList.APPS_PATH
+	headBar.visible: currentPathType !== FMList.APPS_PATH
 	altToolBars: isMobile
-	
 	headBar.rightContent: [
 	
 	Maui.ToolButton
@@ -354,7 +376,7 @@ Maui.Page
 	Maui.ToolButton
 	{
 		iconName: "bookmark-new"
-		iconColor: modelList.isBookmark ? colorScheme.highlightColor : colorScheme.textColor		
+		iconColor: modelList.isBookmark ? colorScheme.highlightColor : colorScheme.textColor
 		onClicked: modelList.isBookmark = !modelList.isBookmark
 		tooltipText: qsTr("Bookmark...")
 	},
@@ -380,7 +402,6 @@ Maui.Page
 	Maui.ToolButton
 	{
 		id: viewBtn
-		//            iconColor: floatingBar ? altColorText : textColor
 		iconName: control.detailsView ? "view-list-icons" : "view-list-details"
 		onClicked: control.switchView()
 	},
@@ -405,6 +426,16 @@ Maui.Page
 		Maui.Menu
 		{
 			id: sortMenu
+			
+			Maui.MenuItem
+			{
+				text: qsTr("Folders first")
+				checkable: true
+				checked: modelList.foldersFirst
+				onTriggered: modelList.foldersFirst = !modelList.foldersFirst
+			}
+			
+			MenuSeparator{}
 			
 			Maui.MenuItem
 			{
@@ -490,7 +521,7 @@ Maui.Page
 	
 	Component
 	{
-		id: selectionBarComponent		
+		id: selectionBarComponent
 		
 		Maui.SelectionBar
 		{
@@ -499,14 +530,14 @@ Maui.Page
 			onExitClicked: clearSelection()
 		}
 	}
-
+	
 	ColumnLayout
 	{
 		anchors.fill: parent
 		visible: !holder.visible
-		z: holder.z + 1	
+		z: holder.z + 1
 		spacing: 0
-			
+		
 		Loader
 		{
 			id: viewLoader
@@ -523,12 +554,23 @@ Maui.Page
 		{
 			id: selectionBarLoader
 			Layout.fillWidth: true
-			Layout.preferredHeight: control.selectionBar ? (control.selectionBar.visible ? iconSizes.big + space.large + space.small : 0) : 0
-			Layout.leftMargin: contentMargins*2
-			Layout.rightMargin: contentMargins*2
+			Layout.preferredHeight: control.selectionBar ? (control.selectionBar.visible ? control.selectionBar.barHeight : 0) : 0
+			Layout.leftMargin:  contentMargins * (isMobile ? 3 : 2)
+			Layout.rightMargin: contentMargins * (isMobile ? 3 : 2)
 			Layout.bottomMargin: contentMargins*2
 			z: holder.z +1
 		}
+	}
+	
+	onThumbnailsSizeChanged:
+	{
+		if(trackChanges && saveDirProps)
+			Maui.FM.setDirConf(currentPath+"/.directory", "MAUIFM", "IconSize", thumbnailsSize)
+		else 
+			Maui.FM.saveSettings("IconSize", thumbnailsSize, "SETTINGS")
+				
+		if(!control.detailsView)
+			browser.adaptGrid()
 	}
 	
 	function openItem(index)
@@ -544,7 +586,12 @@ Maui.Page
 					else
 						Maui.FM.runApplication(path)
 						break
-						
+			case FMList.CLOUD_PATH:
+				if(item.mime === "inode/directory")
+					control.openFolder(path)
+					else
+						Maui.FM.openCloudItem(item)
+						break;
 			default:
 				if(selectionMode && !Maui.FM.isDir(item.path))
 					addToSelection(item, true)
@@ -588,20 +635,28 @@ Maui.Page
 	function populate(path)
 	{
 		if(!path.length)
-			return; 
+			return;
 		
 		setPath(path)
 		
-		if(currentPathType === FMList.PLACES_PATH && trackChanges)
+		if(currentPathType === FMList.PLACES_PATH)
 		{
-			var iconsize = Maui.FM.dirConf(path+"/.directory")["iconsize"] ||  iconSizes.large
-			thumbnailsSize = parseInt(iconsize)
-			
-			detailsView = Maui.FM.dirConf(path+"/.directory")["detailview"] === "true" ? true : false
+			if(trackChanges && saveDirProps)
+			{
+				var conf = Maui.FM.dirConf(path+"/.directory")
+				var iconsize = conf["iconsize"] ||  iconSizes.large
+				thumbnailsSize = parseInt(iconsize)
+				
+				detailsView = conf["detailview"] === "true" ? true : false
+			}else
+			{
+				thumbnailsSize = parseInt(Maui.FM.loadSettings("IconSize", "SETTINGS", thumbnailsSize))			
+				detailsView = Maui.FM.loadSettings("DetailsView", "SETTINGS", detailsView)
+			}
 		}
 		
 		if(!detailsView)
-			browser.adaptGrid()		
+			browser.adaptGrid()
 	}
 	
 	function goBack()
@@ -680,8 +735,10 @@ Maui.Page
 	function switchView(state)
 	{
 		detailsView = state ? state : !detailsView
-		if(trackChanges)
+		if(trackChanges && saveDirProps)
 			Maui.FM.setDirConf(currentPath+"/.directory", "MAUIFM", "DetailView", detailsView)
+		else
+			Maui.FM.saveSettings("DetailsView", detailsView, "SETTINGS")
 	}
 	
 	function bookmarkFolder(paths)
@@ -690,7 +747,7 @@ Maui.Page
 		{
 			for(var i in paths)
 			{
-				if(Maui.FM.isDefaultPath(paths[i])) 
+				if(Maui.FM.isDefaultPath(paths[i]))
 					continue
 					Maui.FM.bookmark(paths[i])
 			}
@@ -725,7 +782,7 @@ Maui.Page
 		 *				break
 		 *			default:
 		 *				thumbnailsSize = iconSizes.large
-		 *				
+		 *
 	}*/
 	}
 	
@@ -753,18 +810,11 @@ Maui.Page
 			// 				break
 			// 			default:
 			// 				thumbnailsSize = iconSizes.large
-			// 				
+			//
 			// 		}
 	}
 	
-	onThumbnailsSizeChanged:
-	{
-		if(trackChanges)
-			Maui.FM.setDirConf(currentPath+"/.directory", "MAUIFM", "IconSize", thumbnailsSize)
-			
-			if(!control.detailsView)
-				browser.adaptGrid()
-	}
+	
 	
 	function groupBy()
 	{
@@ -773,20 +823,20 @@ Maui.Page
 		
 		switch(modelList.sortBy)
 		{
-			case FMList.LABEL: 
+			case FMList.LABEL:
 				prop = "label"
 				criteria = ViewSection.FirstCharacter
 				break;
-			case FMList.MIME: 
+			case FMList.MIME:
 				prop = "mime"
 				break;
-			case FMList.SIZE: 
+			case FMList.SIZE:
 				prop = "size"
 				break;
-			case FMList.DATE: 
+			case FMList.DATE:
 				prop = "date"
 				break;
-			case FMList.MODIFIED: 
+			case FMList.MODIFIED:
 				prop = "modified"
 				break;
 		}

@@ -59,7 +59,7 @@ Maui.Popup
 	widthHint: 0.9
 	heightHint: 0.9
 	z: 1
-	clip: false
+    clip: false
 	
 	Maui.Popup
 	{
@@ -103,7 +103,7 @@ Maui.Popup
 	Maui.Page
 	{
 		id: page
-		headBarVisible: headBar.count > 2
+		headBar.visible: headBar.count > 2
 		anchors.fill: parent
 		footBar.dropShadow: false
 		footBar.drawBorder: false
@@ -111,7 +111,7 @@ Maui.Popup
 		clip: true
 		headBarExit: false
 		colorScheme.backgroundColor : control.colorScheme.backgroundColor
-		footBarVisible: defaultButtons || footBar.count > 2
+		footBar.visible: defaultButtons || footBar.count > 2
 		footBar.colorScheme.backgroundColor: colorScheme.backgroundColor
 		footBar.margins: space.big
 		footBar.rightContent: Row
@@ -176,7 +176,7 @@ Maui.Popup
 			}
 			
 			Item
-			{				
+            {
 				ColumnLayout        
 				{
 					id: _pageContent
@@ -184,7 +184,6 @@ Maui.Popup
 					width: parent.width
 					height: implicitHeight
 					spacing: space.medium
-					
 				
 					Label
 					{
@@ -203,8 +202,7 @@ Maui.Popup
 						font.bold: true
 						font.pointSize: fontSizes.huge
 						//                         elide: Qt.ElideRight					
-					}                    
-				
+                    }
 					
 					ScrollView
 					{
@@ -215,7 +213,8 @@ Maui.Popup
 						Layout.alignment: Qt.AlignLeft | Qt.AlignTop
 						padding: 0                
 						clip: true
-						
+                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+
 						TextArea
 						{
 							id: body

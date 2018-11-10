@@ -70,7 +70,7 @@ namespace FMH
 		NONE
 	}; Q_ENUM_NS(FILTER_TYPE);
 	
-	static const QHash<FILTER_TYPE, QStringList> FILTER_LIST =
+	static const QHash<FMH::FILTER_TYPE, QStringList> FILTER_LIST =
 	{
 		{FILTER_TYPE::AUDIO, {"*.mp3", "*.mp4", "*.wav", "*.ogg", "*.flac"}},
 		{FILTER_TYPE::VIDEO, {"*.mp4", "*.mkv", "*.mov", "*.avi", "*.flv"}},
@@ -103,10 +103,13 @@ namespace FMH
 		SHOWTHUMBNAIL,
 		SHOWTERMINAL,
 		COUNT,
-		SORTBY
+        SORTBY,
+        USER,
+        PASSWORD,
+        SERVER
 	}; Q_ENUM_NS(MODEL_KEY);
 	
-	static const QHash<MODEL_KEY, QString> MODEL_NAME =
+	static const QHash<FMH::MODEL_KEY, QString> MODEL_NAME =
 	{
 		{MODEL_KEY::ICON, "icon"},
 		{MODEL_KEY::LABEL, "label"},
@@ -130,7 +133,40 @@ namespace FMH
 		{MODEL_KEY::SHOWTERMINAL, "showterminal"},
 		{MODEL_KEY::SHOWTHUMBNAIL, "showthumbnail"},
 		{MODEL_KEY::COUNT, "count"},
-		{MODEL_KEY::SORTBY, "sortby"}
+        {MODEL_KEY::SORTBY, "sortby"},
+        {MODEL_KEY::USER, "user"},
+        {MODEL_KEY::PASSWORD, "password"},
+        {MODEL_KEY::SERVER, "server"}
+    };
+	
+	static const QHash<QString, FMH::MODEL_KEY> MODEL_NAME_KEY =
+	{
+		{MODEL_NAME[MODEL_KEY::ICON], MODEL_KEY::ICON},
+		{MODEL_NAME[MODEL_KEY::LABEL], MODEL_KEY::LABEL},
+		{MODEL_NAME[MODEL_KEY::PATH], MODEL_KEY::PATH},
+		{MODEL_NAME[MODEL_KEY::URL], MODEL_KEY::URL},
+		{MODEL_NAME[MODEL_KEY::TYPE], MODEL_KEY::TYPE},
+		{MODEL_NAME[MODEL_KEY::GROUP], MODEL_KEY::GROUP},
+		{MODEL_NAME[MODEL_KEY::OWNER], MODEL_KEY::OWNER},
+		{MODEL_NAME[MODEL_KEY::SUFFIX], MODEL_KEY::SUFFIX},
+		{MODEL_NAME[MODEL_KEY::NAME], MODEL_KEY::NAME},
+		{MODEL_NAME[MODEL_KEY::DATE], MODEL_KEY::DATE},
+		{MODEL_NAME[MODEL_KEY::MODIFIED], MODEL_KEY::MODIFIED},
+		{MODEL_NAME[MODEL_KEY::MIME], MODEL_KEY::MIME},
+		{MODEL_NAME[MODEL_KEY::SIZE], MODEL_KEY::SIZE,},
+		{MODEL_NAME[MODEL_KEY::TAGS], MODEL_KEY::TAGS},
+		{MODEL_NAME[MODEL_KEY::PERMISSIONS], MODEL_KEY::PERMISSIONS},
+		{MODEL_NAME[MODEL_KEY::THUMBNAIL], MODEL_KEY::THUMBNAIL},
+		{MODEL_NAME[MODEL_KEY::ICONSIZE], MODEL_KEY::ICONSIZE},
+		{MODEL_NAME[MODEL_KEY::HIDDEN], MODEL_KEY::HIDDEN},
+		{MODEL_NAME[MODEL_KEY::DETAILVIEW], MODEL_KEY::DETAILVIEW},
+		{MODEL_NAME[MODEL_KEY::SHOWTERMINAL], MODEL_KEY::SHOWTERMINAL},
+		{MODEL_NAME[MODEL_KEY::SHOWTHUMBNAIL], MODEL_KEY::SHOWTHUMBNAIL},
+		{MODEL_NAME[MODEL_KEY::COUNT], MODEL_KEY::COUNT},
+		{MODEL_NAME[MODEL_KEY::SORTBY], MODEL_KEY::SORTBY},
+		{MODEL_NAME[MODEL_KEY::USER], MODEL_KEY::USER},
+		{MODEL_NAME[MODEL_KEY::PASSWORD], MODEL_KEY::PASSWORD},
+		{MODEL_NAME[MODEL_KEY::SERVER], MODEL_KEY::SERVER}
 	};
 	
 	typedef QHash<FMH::MODEL_KEY, QString> MODEL;
@@ -144,7 +180,8 @@ namespace FMH
 		TAGS_PATH,
 		APPS_PATH,
 		TRASH_PATH,
-		SEARCH_PATH
+        SEARCH_PATH,
+        CLOUD_PATH
 	}; Q_ENUM_NS(PATHTYPE_KEY);
 	
 	static const QHash<PATHTYPE_KEY, QString> PATHTYPE_NAME =
@@ -155,10 +192,12 @@ namespace FMH
 		{PATHTYPE_KEY::APPS_PATH, "Apps"},
 		{PATHTYPE_KEY::TRASH_PATH, "Trash"},
 		{PATHTYPE_KEY::TAGS_PATH, "Tags"},
-		{PATHTYPE_KEY::SEARCH_PATH, "Search"}
+        {PATHTYPE_KEY::SEARCH_PATH, "Search"},
+        {PATHTYPE_KEY::CLOUD_PATH, "Cloud"}
 	};
 	
 	const QString DataPath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+	const QString CloudCachePath = FMH::DataPath+"/Cloud/";
 	
 	#if defined(Q_OS_ANDROID)
 	const QString PicturesPath = PATHS::PicturesPath;
@@ -222,7 +261,7 @@ namespace FMH
 		{RootPath, "folder-root"}
 	};
 	
-	#endif
+	#endif	
 	
 	inline bool fileExists(const QString &url)
 	{
@@ -315,7 +354,7 @@ namespace FMH
 			#if defined(Q_OS_ANDROID)
 			QMimeDatabase mime;
 			auto type = mime.mimeTypeForFile(path);
-			return type.genericIconName();
+            return type.iconName();
 			#else
 			KFileItem mime(path);
 			return mime.iconName();
@@ -333,13 +372,15 @@ namespace FMH
 	
 	enum class TABLE : uint8_t
 	{
-		BOOKMARKS
+        BOOKMARKS,
+        CLOUDS
 	};
 	
 	static const QMap<FMH::TABLE, QString> TABLEMAP =
 	{
-		{TABLE::BOOKMARKS, "bookmarks"}
-	};
+        {TABLE::BOOKMARKS, "bookmarks"},
+        {TABLE::CLOUDS, "clouds"}
+    };
 	
 	typedef QMap<FMH::MODEL_KEY, QString> DB;
 	
@@ -376,7 +417,7 @@ namespace FMH
 			{FMH::MODEL_KEY::GROUP, file.group()},
 			{FMH::MODEL_KEY::OWNER, file.owner()},
 			{FMH::MODEL_KEY::SUFFIX, file.completeSuffix()},
-			{FMH::MODEL_KEY::LABEL, /*file.isDir() ? file.baseName() :*/ file.fileName()},
+			{FMH::MODEL_KEY::LABEL, /*file.isDir() ? file.baseName() :*/ path == FMH::HomePath ? QStringLiteral("Home") : file.fileName()},
 			{FMH::MODEL_KEY::NAME, file.fileName()},
 			{FMH::MODEL_KEY::DATE,  file.birthTime().toString(Qt::TextDate)},
 			{FMH::MODEL_KEY::MODIFIED, file.lastModified().toString(Qt::TextDate)},
@@ -384,7 +425,9 @@ namespace FMH
 			{FMH::MODEL_KEY::ICON, FMH::getIconName(path)},
 			{FMH::MODEL_KEY::SIZE, QString::number(file.size()) /*locale.formattedDataSize(file.size())*/},
 			{FMH::MODEL_KEY::PATH, path},
-			{FMH::MODEL_KEY::THUMBNAIL, path}
+			{FMH::MODEL_KEY::THUMBNAIL, path},
+			{FMH::MODEL_KEY::COUNT, file.isDir() ? QString::number(QDir(path).count()) : "0"}
+			
 		};
 		
 		return res;

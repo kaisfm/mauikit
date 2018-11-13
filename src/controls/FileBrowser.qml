@@ -24,15 +24,17 @@ Maui.Page
 	
 	property string currentPath: Maui.FM.homePath()
 	
-	property var copyPaths : []
-	property var cutPaths : []
+	property var copyItems : []
+	property var cutItems : []
+	
+	property var indexHistory : []
 	
 	property bool isCopy : false
 	property bool isCut : false
 	
 	property bool selectionMode : false
 	property bool group : false
-	property bool detailsView : false
+	property bool detailsView : Maui.FM.loadSettings("DetailsView", "SETTINGS", detailsView) == "true" ? true: false
 	property bool showEmblems: true
 	
 	property alias selectionBar : selectionBarLoader.item
@@ -119,7 +121,7 @@ Maui.Page
 			title: qsTr("Rename file")
 			textEntry.text: list.get(browser.currentIndex).label
 			textEntry.placeholderText: qsTr("New name...")
-			onFinished: Maui.FM.rename(itemMenu.paths[0], textEntry.text)
+			onFinished: Maui.FM.rename(itemMenu.items[0].path, textEntry.text)
 			
 			acceptText: qsTr("Rename")
 			rejectText: qsTr("Cancel")
@@ -163,28 +165,31 @@ Maui.Page
 		onBookmarkClicked: control.bookmarkFolder(paths)
 		onCopyClicked:
 		{
-			if(paths.length)
+			if(items.length)
 			{
 				if(control.selectionBar)
+				{
 					control.selectionBar.animate("#6fff80")
-					
-					control.copy(paths)
+					console.log(control.selectionBar.selectedPaths)
+				}					
+				control.copy(items)
 			}
 		}
+		
 		onCutClicked:
 		{
-			if(paths.length)
+			if(items.length)
 			{
 				if(control.selectionBar)
 					control.selectionBar.animate("#fff44f")
 					
-					control.cut(paths)
+					control.cut(items)
 			}
 		}
 		
 		onRenameClicked:
 		{
-			if(paths.length === 1)
+			if(items.length === 1)
 			{
 				dialogLoader.sourceComponent = renameDialogComponent
 				dialog.open()
@@ -216,13 +221,13 @@ Maui.Page
 		
 		onShareClicked:
 		{
-			if(isAndroid)
-				Maui.Android.shareDialog(paths)
-				else
-				{
-					dialogLoader.sourceComponent= shareDialogComponent
-					dialog.show(paths)
-				}
+// 			if(isAndroid)
+// 				Maui.Android.shareDialog(paths)
+// 				else
+// 				{
+// 					dialogLoader.sourceComponent= shareDialogComponent
+// 					dialog.show(paths)
+// 				}
 		}
 	}
 	
@@ -232,11 +237,10 @@ Maui.Page
 		
 		Maui.ListBrowser
 		{
-			
 			showPreviewThumbnails: modelList.preview
 			showEmblem: currentPathType !== FMList.APPS_PATH && showEmblems
 			rightEmblem: isMobile ? "document-share" : ""
-			leftEmblem: "emblem-added"
+			leftEmblem: "list-add"
 			showDetailsInfo: true
 			// 			itemSize: thumbnailsSize
 			model: folderModel
@@ -263,7 +267,7 @@ Maui.Page
 			showEmblem: currentPathType !== FMList.APPS_PATH && showEmblems
 			showPreviewThumbnails: modelList.preview
 			rightEmblem: isMobile ? "document-share" : ""
-			leftEmblem: "emblem-added"
+			leftEmblem: "list-add"
 			model: folderModel
 		}
 	}
@@ -272,13 +276,23 @@ Maui.Page
 	{
 		target: browser
 		
-		onItemClicked: control.itemClicked(index)
+		onItemClicked: 
+		{		
+			browser.currentIndex = index
+			indexHistory.push(index)
+			control.itemClicked(index)
+		}
 		
-		onItemDoubleClicked: control.itemDoubleClicked(index)
+		onItemDoubleClicked: 
+		{
+			browser.currentIndex = index	
+			indexHistory.push(index)
+			control.itemDoubleClicked(index)
+		}
 		
 		onItemRightClicked:
 		{
-			itemMenu.show([modelList.get(index).path])
+			itemMenu.show([modelList.get(index)])
 			control.itemRightClicked(index)
 		}
 		
@@ -473,7 +487,7 @@ Maui.Page
 			{
 				text: qsTr("Name")
 				checkable: true
-				checked: modelList.sortBy === FMList.NAME
+				checked: modelList.sortBy === FMList.LABEL
 				onTriggered: modelList.sortBy = FMList.LABEL
 			}
 			
@@ -526,7 +540,7 @@ Maui.Page
 		Maui.SelectionBar
 		{
 			anchors.fill: parent
-			onIconClicked: itemMenu.show(selectedPaths)
+			onIconClicked: itemMenu.show(selectedItems)
 			onExitClicked: clearSelection()
 		}
 	}
@@ -636,7 +650,8 @@ Maui.Page
 	{
 		if(!path.length)
 			return;
-		
+	
+		browser.currentIndex = 0
 		setPath(path)
 		
 		if(currentPathType === FMList.PLACES_PATH)
@@ -651,7 +666,7 @@ Maui.Page
 			}else
 			{
 				thumbnailsSize = parseInt(Maui.FM.loadSettings("IconSize", "SETTINGS", thumbnailsSize))			
-				detailsView = Maui.FM.loadSettings("DetailsView", "SETTINGS", detailsView)
+				detailsView =  Maui.FM.loadSettings("DetailsView", "SETTINGS", detailsView) == "true" ? true: false
 			}
 		}
 		
@@ -662,6 +677,9 @@ Maui.Page
 	function goBack()
 	{
 		populate(modelList.previousPath)
+		console.log("INDEX HISTORY"<< indexHistory)
+		browser.currentIndex = indexHistory.pop()
+		browser.positionViewAtIndex(browser.currentIndex, ListView.Center)
 	}
 	
 	function goNext()
@@ -696,22 +714,22 @@ Maui.Page
 	
 	function clean()
 	{
-		copyPaths = []
-		cutPaths = []
+		copyItems = []
+		cutItems = []
 		browserMenu.pasteFiles = 0
 		selectionBar.clear()
 	}
 	
-	function copy(paths)
+	function copy(items)
 	{
-		copyPaths = paths
+		copyItems = items
 		isCut = false
 		isCopy = true
 	}
 	
-	function cut(paths)
+	function cut(items)
 	{
-		cutPaths = paths
+		cutItems = paths
 		isCut = true
 		isCopy = false
 	}
@@ -719,10 +737,10 @@ Maui.Page
 	function paste()
 	{
 		if(isCopy)
-			Maui.FM.copy(copyPaths, currentPath)
-			else if(isCut)
-				if(Maui.FM.cut(cutPaths, currentPath))
-					clearSelection()
+			Maui.FM.copy(copyItems, currentPath)
+		else if(isCut)
+			if(Maui.FM.cut(cutItems, currentPath))
+				clearSelection()
 	}
 	
 	function remove(paths)

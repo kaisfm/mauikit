@@ -58,12 +58,12 @@ FMList::~FMList()
 void FMList::pre()
 {
 	emit this->preListChanged();
-// 	this->setContentReady(false);
+	// 	this->setContentReady(false);
 }
 
 void FMList::pos()
 {
-// 	this->setContentReady(true);
+	// 	this->setContentReady(true);
 	emit this->postListChanged();
 }
 
@@ -160,8 +160,8 @@ void FMList::reset()
 				this->preview = conf[FMH::MODEL_NAME[FMH::MODEL_KEY::SHOWTHUMBNAIL]].toBool();
 			}else
 			{
-				this->hidden = UTIL::loadSettings("HiddenFilesShown", "SETTINGS", this->hidden).toBool();				
-				this->preview = UTIL::loadSettings("ShowThumbnail", "SETTINGS", this->preview).toBool();	
+				this->hidden = UTIL::loadSettings("HiddenFilesShown", "SETTINGS", this->hidden).toBool();
+				this->preview = UTIL::loadSettings("ShowThumbnail", "SETTINGS", this->preview).toBool();
 			}
 			emit this->previewChanged();			
 			emit this->hiddenChanged();
@@ -210,8 +210,71 @@ void FMList::setSortBy(const FMH::MODEL_KEY& key)
 void FMList::sortList()
 {
 	auto key = this->sort;
-	auto foldersFirst = this->foldersFirst;
-	std::sort(this->list.begin(), this->list.end(), [key, foldersFirst](const FMH::MODEL& e1, const FMH::MODEL& e2) -> bool
+	auto index = 0;
+	
+	if(this->foldersFirst)
+	{
+		qSort(this->list.begin(), this->list.end(), [](const FMH::MODEL& e1, const FMH::MODEL& e2) -> bool
+		{
+			const auto key = FMH::MODEL_KEY::MIME;
+			if(e1[key] == "inode/directory")
+				return true;
+			
+			return false;
+		});
+		
+		for(auto item : this->list)
+			if(item[FMH::MODEL_KEY::MIME] == "inode/directory")
+				index++;
+			else break;
+			
+		qSort(this->list.begin(),this->list.begin() + index, [key](const FMH::MODEL& e1, const FMH::MODEL& e2) -> bool
+		{
+			auto role = key;
+			
+			switch(role)
+			{				
+				case FMH::MODEL_KEY::SIZE:
+				{				
+					if(e1[role].toDouble() > e2[role].toDouble())
+						return true;
+					break;
+				}
+				
+				case FMH::MODEL_KEY::MODIFIED:
+				case FMH::MODEL_KEY::DATE:
+				{
+					auto currentTime = QDateTime::currentDateTime();
+					
+					auto date1 = QDateTime::fromString(e1[role], Qt::TextDate);
+					auto date2 = QDateTime::fromString(e2[role], Qt::TextDate);
+					
+					if(date1.secsTo(currentTime) <  date2.secsTo(currentTime))
+						return true;
+					
+					break;
+				}
+				
+				case FMH::MODEL_KEY::LABEL:
+				{
+					const auto str1 = QString(e1[role]).toLower();
+					const auto str2 = QString(e2[role]).toLower();
+					
+					if(str1 < str2)
+						return true;				
+					break;
+				}
+				
+				default:
+					if(e1[role] < e2[role])
+						return true;
+			}
+			
+			return false;
+		});
+	}
+	
+	qSort(this->list.begin() + index, this->list.end(), [key](const FMH::MODEL& e1, const FMH::MODEL& e2) -> bool
 	{
 		auto role = key;
 		
@@ -223,21 +286,9 @@ void FMList::sortList()
 				break;
 				
 			case FMH::MODEL_KEY::SIZE:
-			{
-				QLocale l;
-				
-				if(foldersFirst)
-				{
-					if((l.toDouble(e1[role]) < l.toDouble(e2[role])) && (e1[FMH::MODEL_KEY::MIME] == "inode/directory"))
-						return true;
-				}
-				else
-				{
-					if(l.toDouble(e1[role]) > l.toDouble(e2[role]))
-						return true;
-				}
-				
-				
+			{				
+				if(e1[role].toDouble() > e2[role].toDouble())
+					return true;
 				break;
 			}
 			
@@ -248,15 +299,10 @@ void FMList::sortList()
 				
 				auto date1 = QDateTime::fromString(e1[role], Qt::TextDate);
 				auto date2 = QDateTime::fromString(e2[role], Qt::TextDate);
-				if(foldersFirst)
-				{
-					if((date1.secsTo(currentTime) <  date2.secsTo(currentTime)) && (e1[FMH::MODEL_KEY::MIME] == "inode/directory"))
-						return true;
-				}else
-				{
-					if(date1.secsTo(currentTime) <  date2.secsTo(currentTime))
-						return true;
-				}
+				
+				if(date1.secsTo(currentTime) <  date2.secsTo(currentTime))
+					return true;
+				
 				break;
 			}
 			
@@ -265,28 +311,14 @@ void FMList::sortList()
 				const auto str1 = QString(e1[role]).toLower();
 				const auto str2 = QString(e2[role]).toLower();
 				
-				if(foldersFirst)
-				{
-					if((str1 < str2) && (e1[FMH::MODEL_KEY::MIME] == "inode/directory"))
-						return true;
-				}else
-				{
-					if(str1 < str2)
-						return true;
-				}
+				if(str1 < str2)
+					return true;				
 				break;
 			}
 			
 			default:
-				if(foldersFirst)
-				{
-					if((e1[role] < e2[role]) && (e1[FMH::MODEL_KEY::MIME] == "inode/directory"))
-						return true;
-				}else
-				{
-					if(e1[role] < e2[role])
-						return true;
-				}
+				if(e1[role] < e2[role])
+					return true;
 		}
 		
 		return false;
@@ -580,7 +612,7 @@ void FMList::setFoldersFirst(const bool &value)
 	
 	this->foldersFirst = value;
 	emit this->foldersFirstChanged();
-
+	
 	this->sortList();
 	
 	this->pos();

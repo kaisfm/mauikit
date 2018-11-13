@@ -140,19 +140,24 @@ void Syncing::saveTo(const QByteArray &array, const QString& path)
 		auto newPath = QString(path).right(cut);
 		dir.mkdir(QString(path).replace(newPath, ""));
 		qDebug()<< newPath << cut;
+	}else{
+		file.remove();
 	}
 	
 	file.open(QIODevice::WriteOnly);
 	file.write(array);
 	file.close();
 	
-	emit this->itemDownloaded(FMH::getFileInfoModel(path));
-	emit this->itemReady(FMH::getFileInfoModel(path));
+	this->emitSignal(FMH::getFileInfoModel(path));
+	// 	emit this->itemReady(FMH::getFileInfoModel(path));
 }
 
-void Syncing::resolveFile(const FMH::MODEL& item)
-{
-	const auto file = this->getCacheFile(item[FMH::MODEL_KEY::URL]);	
+void Syncing::resolveFile(const FMH::MODEL& item, const Syncing::SIGNAL_TYPE &signalType)
+{	
+	this->signalType = signalType;
+	
+	const auto url = item[FMH::MODEL_KEY::URL];
+	const auto file = this->getCacheFile(url);	
 	
 	if(FMH::fileExists(file))
 	{			
@@ -161,14 +166,45 @@ void Syncing::resolveFile(const FMH::MODEL& item)
 		const auto dateCacheFile = QDateTime::fromString(cacheFile[FMH::MODEL_KEY::DATE], Qt::TextDate);		
 		const auto dateCloudFile = QDateTime::fromString(QString(item[FMH::MODEL_KEY::MODIFIED]).replace("GMT", "").simplified(), "ddd, dd MMM yyyy hh:mm:ss");
 		
-		qDebug()<< dateCacheFile << dateCloudFile<< QString(item[FMH::MODEL_KEY::MODIFIED]).replace("GMT", "").simplified();
+		qDebug()<<"FILE EXISTS ON CACHE" << dateCacheFile << dateCloudFile<< QString(item[FMH::MODEL_KEY::MODIFIED]).replace("GMT", "").simplified()<< file;
 		
 		if(dateCloudFile >  dateCacheFile)
-			this->download(file);
-		
-		emit this->itemReady(cacheFile);		
+			this->download(url);
+		else
+			this->emitSignal(cacheFile);
 	}
 	else
-		this->download(file);
+		this->download(url);
 }
 
+
+void Syncing::emitSignal(const FMH::MODEL &item)
+{
+	switch(this->signalType)
+	{
+		case SIGNAL_TYPE::OPEN:
+			emit this->readyOpen(item);
+			break;
+			
+		case SIGNAL_TYPE::DOWNLOAD:
+			emit this->readyDownload(item);
+			break;
+			
+		case SIGNAL_TYPE::COPY:
+			emit this->readyCopy(item);
+			break;		
+	}
+}
+
+void Syncing::setCopyTo(const QString &path)
+{
+	if(this->copyTo == path)
+		return;
+	
+	this->copyTo = path;
+}
+
+QString Syncing::getCopyTo() const
+{
+	return this->copyTo;
+}

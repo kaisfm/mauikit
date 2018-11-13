@@ -9,15 +9,31 @@ class WebDAVReply;
 class Syncing : public QObject
 {
     Q_OBJECT
-public:
+	
+public:	
+	enum SIGNAL_TYPE : uint_fast8_t
+	{
+		OPEN,
+		DOWNLOAD,
+		COPY,
+		SAVE,
+		CUT,
+		DELETE,
+		RENAME,
+		MOVE,
+		UPLOAD
+	};
     explicit Syncing(QObject *parent = nullptr);
     void listContent(const QString &path);
     void setCredentials(const QString &server, const QString &user, const QString &password);
 	void download(const QString &path);
 	void upload(const QString &path);
-	void resolveFile(const FMH::MODEL &item);
-	
+	void resolveFile(const FMH::MODEL &item, const Syncing::SIGNAL_TYPE &signalType);
+	void setCopyTo(const QString &path);
+	QString getCopyTo() const;	
+
 protected:
+	void emitSignal(const FMH::MODEL &item);
 
 private:
     WebDAVClient *client;
@@ -30,11 +46,16 @@ private:
 	QString getCacheFile(const QString &path);
 
 	QString currentPath;
+	QString copyTo;
+	
+	SIGNAL_TYPE signalType;
 	
 signals:
     void listReady(FMH::MODEL_LIST data);
-	void itemDownloaded(FMH::MODEL item);
-	void itemReady(FMH::MODEL item);
+
+	void readyOpen(FMH::MODEL item);
+	void readyDownload(FMH::MODEL item);
+	void readyCopy(FMH::MODEL item);
 	
 public slots:
 };

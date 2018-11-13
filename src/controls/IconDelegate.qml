@@ -48,7 +48,7 @@ ItemDelegate
 	property color hightlightedColor : GridView.isCurrentItem || hovered || (keepEmblemOverlay && emblemAdded) ? highlightColor : "transparent"
 	
 	property string rightEmblem
-	property string leftEmblem : "emblem-added"
+	property string leftEmblem : "list-add"
 	
 	signal rightClicked()
 	signal emblemClicked(int index)
@@ -86,7 +86,7 @@ ItemDelegate
 		anchors.top: parent.top
 		anchors.left: parent.left
 		onClicked: leftEmblemClicked(index)
-		Component.onCompleted: leftEmblemIcon.item.isMask = false
+// 		Component.onCompleted: leftEmblemIcon.item.isMask = false
 		size: iconSizes.small
 	}
 	
@@ -209,21 +209,22 @@ ItemDelegate
 		
 		RowLayout
 		{
-			anchors.fill: parent			
+			anchors.fill: parent
 			
 			ColumnLayout
 			{
 				Layout.fillHeight: true
 				Layout.fillWidth: false
+				Layout.maximumWidth: 80
+				Layout.minimumWidth: 80
+				Layout.preferredWidth: 80
 				Layout.alignment: Qt.AlignRight
 				
 				Label
 				{
-					Layout.alignment: Qt.AlignRight
-					
+					Layout.alignment: Qt.AlignRight					
 					Layout.fillWidth: true
 					Layout.fillHeight: true
-					text: model.mime
 					horizontalAlignment: Qt.AlignRight
 					verticalAlignment: Qt.AlignBottom
 					elide: Qt.ElideRight
@@ -231,6 +232,7 @@ ItemDelegate
 					font.pointSize: fontSizes.small
 					color: labelColor
 					opacity: isCurrentListItem ? 1 : 0.5
+					text: model.mime === "inode/directory" ? model.count + qsTr(" items") : Maui.FM.formatSize(model.size)
 				}
 				
 				Label
@@ -239,7 +241,9 @@ ItemDelegate
 					
 					Layout.fillWidth: true
 					Layout.fillHeight: true
-					text: Maui.FM.formatDate(model.modified)
+					
+					text: Maui.FM.formatDate(model.modified, "MM/dd/yyyy")
+					
 					horizontalAlignment: Qt.AlignRight
 					verticalAlignment: Qt.AlignTop
 					elide: Qt.ElideRight
@@ -249,48 +253,7 @@ ItemDelegate
 					opacity: isCurrentListItem ? 1 : 0.5
 				}
 			}
-			
-			ColumnLayout
-			{
-				Layout.fillHeight: true
-				Layout.fillWidth: false
-				Layout.alignment: Qt.AlignRight
-				
-				Label
-				{
-					Layout.alignment: Qt.AlignRight
-					
-					Layout.fillWidth: true
-					Layout.fillHeight: true
-					text: model.count && model.count !== "0" ? model.count + qsTr(" items") : ""
-					horizontalAlignment: Qt.AlignRight
-					verticalAlignment: Qt.AlignBottom
-					elide: Qt.ElideRight
-					wrapMode: Text.Wrap
-					font.pointSize: fontSizes.small
-					color: labelColor
-					opacity: isCurrentListItem ? 1 : 0.5
-				}
-				
-				Label
-				{
-					Layout.alignment: Qt.AlignRight
-					
-					Layout.fillWidth: true
-					Layout.fillHeight: true
-					text: Maui.FM.formatSize(model.size)
-					horizontalAlignment: Qt.AlignRight
-					verticalAlignment: Qt.AlignTop
-					elide: Qt.ElideRight
-					wrapMode: Text.Wrap
-					font.pointSize: fontSizes.small
-					color: labelColor
-					opacity: isCurrentListItem ? 1 : 0.5
-				}
-			}
-			
-		}
-		
+		}		
 	}
 	
 	GridLayout

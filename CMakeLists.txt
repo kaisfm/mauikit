@@ -100,16 +100,22 @@ set(fm_HDRS
 set(tagging_SRCS
     src/utils/tagging/tagging.cpp
     src/utils/tagging/tagdb.cpp
+    src/utils/tagging/tagsmodel.cpp
+    src/utils/tagging/tagslist.cpp
     )
 
 set(tagging_HDRS
     src/utils/tagging/tagging.h
     src/utils/tagging/tagdb.h
     src/utils/tagging/tag.h
+    src/utils/tagging/tagsmodel.h
+    src/utils/tagging/tagslist.h
     )
 
 set(syncing_SRCS
     src/utils/syncing/syncing.cpp
+    src/utils/syncing/syncingmodel.cpp
+    src/utils/syncing/syncinglist.cpp
     src/utils/syncing/libwebdavclient/lib/WebDAVClient.cpp
     src/utils/syncing/libwebdavclient/lib/dto/WebDAVItem.cpp
     src/utils/syncing/libwebdavclient/lib/utils/Environment.cpp
@@ -120,6 +126,8 @@ set(syncing_SRCS
 
 set(syncing_HDRS
     src/utils/syncing/syncing.h
+    src/utils/syncing/syncingmodel.h
+    src/utils/syncing/syncinglist.h
     src/utils/syncing/libwebdavclient/lib/WebDAVClient.hpp
     src/utils/syncing/libwebdavclient/lib/dto/WebDAVItem.hpp
     src/utils/syncing/libwebdavclient/lib/utils/Environment.hpp

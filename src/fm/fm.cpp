@@ -57,7 +57,7 @@ FM* FM::getInstance()
 
 void FM::init()
 {
-    this->tag = Tagging::getInstance("MAUIFM","1.0", "org.kde.maui","MauiKit File Manager");
+    this->tag = Tagging::getInstance();
     this->sync = new Syncing(this);
     connect(this->sync, &Syncing::listReady, [this](const FMH::MODEL_LIST list)
     {
@@ -271,7 +271,7 @@ FMH::MODEL_LIST FM::getTags(const int &limit)
         for(auto tag : this->tag->getUrlsTags(false))
         {
             qDebug()<< "TAG << "<< tag;
-            auto label = tag.toMap().value(TAG::KEYMAP[TAG::KEY::TAG]).toString();
+            auto label = tag.toMap().value(TAG::KEYMAP[TAG::KEYS::TAG]).toString();
             data << FMH::MODEL
             {
             {FMH::MODEL_KEY::PATH, label},
@@ -321,7 +321,7 @@ FMH::MODEL_LIST FM::getCloudAccounts()
         auto map = account.toMap();
         res << FMH::MODEL {
         {FMH::MODEL_KEY::PATH, QStringLiteral("Cloud/")+map[FMH::MODEL_NAME[FMH::MODEL_KEY::USER]].toString()},
-        {FMH::MODEL_KEY::ICON, "love"},
+        {FMH::MODEL_KEY::ICON, "folder-cloud"},
         {FMH::MODEL_KEY::LABEL, map[FMH::MODEL_NAME[FMH::MODEL_KEY::USER]].toString()},
         {FMH::MODEL_KEY::TYPE,  FMH::PATHTYPE_NAME[FMH::PATHTYPE_KEY::CLOUD_PATH]}};
 }
@@ -338,7 +338,7 @@ void FM::openCloudItem(const QVariantMap &item)
 	this->sync->resolveFile(data, Syncing::SIGNAL_TYPE::OPEN);
 }
 
-void FM::addCloudAccount(const QString &server, const QString &user, const QString &password)
+bool FM::addCloudAccount(const QString &server, const QString &user, const QString &password)
 {
     QVariantMap account = {
         {FMH::MODEL_NAME[FMH::MODEL_KEY::SERVER], server},
@@ -347,7 +347,12 @@ void FM::addCloudAccount(const QString &server, const QString &user, const QStri
     };
 
     if(this->insert(FMH::TABLEMAP[FMH::TABLE::CLOUDS], account))
-        emit this->cloudAccountInserted(user);
+    {
+		emit this->cloudAccountInserted(user);
+		return true;
+	}
+	
+	return false;
 }
 
 FMH::MODEL_LIST FM::getTagContent(const QString &tag)
@@ -358,11 +363,8 @@ FMH::MODEL_LIST FM::getTagContent(const QString &tag)
 
     for(auto data : this->tag->getUrls(tag, false))
     {
-        auto url = data.toMap().value(TAG::KEYMAP[TAG::KEY::URL]).toString();
-
+        const auto url = data.toMap().value(TAG::KEYMAP[TAG::KEYS::URL]).toString();
         auto item = FMH::getFileInfoModel(url);
-        item.insert(FMH::MODEL_KEY::THUMBNAIL, url);
-
         content << item;
     }
 

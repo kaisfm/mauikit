@@ -37,7 +37,6 @@ class MAUIKIT_EXPORT Tagging : public TAGDB
 {
     Q_OBJECT
 public:
-    static Tagging *getInstance(const QString &app, const QString &version, const QString &uri, const QString &comment = QString());
     static Tagging *getInstance();
 
     Q_INVOKABLE QVariantList get(const QString &query);
@@ -51,7 +50,6 @@ public:
     Q_INVOKABLE bool tagAbstract(const QString &tag, const QString &key, const QString &lot, const QString &color = QString(), const QString &comment=QString());
 
     /* UPDATES */
-
     Q_INVOKABLE bool updateUrlTags(const QString &url, const QStringList &tags);
 
     /* QUERIES */
@@ -64,8 +62,11 @@ public:
     Q_INVOKABLE QVariantList getAbstractTags(const QString &key, const QString &lot, const bool &strict = true);
 
     /* DELETES */
-    Q_INVOKABLE bool removeUrlTags(const QString &url);
-
+	Q_INVOKABLE bool removeAbstractTag(const QString &key, const QString &lot, const QString &tag);
+	
+	Q_INVOKABLE bool removeUrlTags(const QString &url);
+	Q_INVOKABLE bool removeUrlTag(const QString &url, const QString &tag);
+	
     /*STATIC METHODS*/
 
     static QString mac();
@@ -73,10 +74,10 @@ public:
     static QString id();
 
 private:
-    Tagging(const QString &app, const QString &version, const QString &uri, const QString &comment = QString(), QObject *parent = nullptr);
+    Tagging(QObject *parent = nullptr);
     ~Tagging();
     static Tagging* instance;
-    void setApp(const QString &app, const QString &uri, const QString &version, const QString &comment = QString());
+    void setApp();
 
     QString application = QString();
     QString version = QString();

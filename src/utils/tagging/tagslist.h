@@ -14,10 +14,18 @@ class TagsList : public QObject
 	Q_PROPERTY(QStringList urls READ getUrls WRITE setUrls NOTIFY urlsChanged)
 	Q_PROPERTY(QString lot READ getLot WRITE setLot NOTIFY lotChanged)
 	Q_PROPERTY(QString key READ getKey WRITE setKey NOTIFY keyChanged)
+	
+	Q_PROPERTY(TAG::KEYS sortBy READ getSortBy WRITE setSortBy NOTIFY sortByChanged())
+	
  
-public:    
+public:   
+	Q_ENUM(TAG::KEYS)
+	
     explicit TagsList(QObject *parent = nullptr);
 	TAG::DB_LIST items() const;
+	
+	TAG::KEYS getSortBy() const;
+	void setSortBy(const TAG::KEYS &key);
 	
 	bool getAbstract() const;
 	void setAbstract(const bool &value);	
@@ -38,6 +46,7 @@ public:
 private:
     TAG::DB_LIST list;
 	void setList();
+	void sortList();
 	Tagging *tag;
 	
 	TAG::DB_LIST toModel(const QVariantList &data);
@@ -47,6 +56,7 @@ private:
 	QStringList urls = QStringList();
 	QString lot;
 	QString key;
+	TAG::KEYS sortBy = TAG::KEYS::ADD_DATE;
 	
 protected:
 
@@ -64,14 +74,24 @@ signals:
 	void urlsChanged();
 	void lotChanged();
 	void keyChanged();
+	void sortByChanged();
 
 public slots:    
     QVariantMap get(const int &index) const;
 	void append(const QString &tag);
 	bool insert(const QString &tag);
+	void insertToUrls(const QString &tag);
+	void insertToAbstract(const QString &tag);
+	void updateToUrls(const QStringList &tags);
+	void updateToAbstract(const QStringList &tags);
+	
 	bool remove(const int &index);
 	void removeFrom(const int &index, const QString &url);
 	void removeFrom(const int &index, const QString &key, const QString &lot);
+	
+	void removeFromUrls(const int &index);
+	void removeFromAbstract(const int &index);
+	
 	void erase(const int &index);
     void refresh();
 

@@ -26,7 +26,7 @@
 FMList::FMList(QObject *parent) : QObject(parent)
 {
 	this->fm = FM::getInstance();
-	connect(this->fm, &FM::cloudServerContentReady, [this](const FMH::MODEL_LIST list)
+	connect(this->fm, &FM::cloudServerContentReady, [this](const FMH::MODEL_LIST &list)
 	{
 		this->pre();
 		
@@ -35,6 +35,16 @@ FMList::FMList(QObject *parent) : QObject(parent)
 		emit this->pathEmptyChanged();
 		this->pos();
 		this->setContentReady(true);		
+	});
+	
+	connect(this->fm, &FM::warningMessage, [this](const QString &message)
+	{
+		emit this->warning(message);
+	});
+	
+	connect(this->fm, &FM::loadProgress, [this](const int &percent)
+	{
+		emit this->progress(percent);
 	});
 	
 	this->watcher = new QFileSystemWatcher(this);
@@ -102,9 +112,11 @@ void FMList::setList()
 			
 		case FMH::PATHTYPE_KEY::CLOUD_PATH:
 			this->list.clear();
-			this->fm->getCloudServerContent(this->path);
-			this->setContentReady(false);
-			return;
+			if(this->fm->getCloudServerContent(this->path))
+			{	
+				this->setContentReady(false);				
+				return;			
+			}else break;
 			
 		case FMH::PATHTYPE_KEY::TRASH_PATH:
 		case FMH::PATHTYPE_KEY::DRIVES_PATH:

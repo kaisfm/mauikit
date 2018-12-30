@@ -73,7 +73,7 @@ Maui.Page
 		
 		Maui.Dialog
 		{
-			property var paths: []
+			property var items: []
 			
 			title: qsTr("Delete files?")
 			message: qsTr("If you are sure you want to delete the files click on Accept, otherwise click on Cancel")
@@ -86,7 +86,7 @@ Maui.Page
 					control.selectionBar.animate("red")
 				}
 				
-				control.remove(paths)
+				control.remove(items)
 				close()
 			}
 		}
@@ -131,9 +131,31 @@ Maui.Page
 	
 	Component
 	{
+		id: notificationDialogComponent
+		
+		Maui.Dialog
+		{
+			defaultButtons: false
+			maxWidth: unit * 300
+			colorScheme.textColor: warningColor
+			colorScheme.backgroundColor: altColor
+		}
+	}
+	
+	Component
+	{
 		id: shareDialogComponent
 		Maui.ShareDialog {}
 	}
+	
+	Component
+	{
+		id: tagsDialogComponent
+		Maui.TagsDialog
+		{
+			onTagsReady: composerList.updateToUrls(tags)
+		}
+	}	
 	
 	BrowserMenu
 	{
@@ -159,7 +181,24 @@ Maui.Page
 		foldersFirst: true
 		onSortByChanged: if(group) groupBy()
 		onContentReadyChanged: console.log("CONTENT READY?", contentReady)
+		onWarning:
+		{
+			dialogLoader.sourceComponent = notificationDialogComponent
+			dialog.title = "An error happened"
+			dialog.message = message
+			dialog.open()
+		}
+		
+		onProgress:
+		{
+			if(percent === 100)
+				_progressBar.value = 0
+			else
+				_progressBar.value = percent/100
+		}
 	}
+	
+	
 	
 	FileMenu
 	{
@@ -175,6 +214,21 @@ Maui.Page
 					console.log(control.selectionBar.selectedPaths)
 				}					
 				control.copy(items)
+			}
+		}
+		
+		onTagsClicked:
+		{
+			if(items.length)
+			{
+				dialogLoader.sourceComponent = tagsDialogComponent
+				
+				if(items.length > 1 && control.selectionBar)			
+					dialog.composerList.urls = control.selectionBar.selectedPaths			
+					else  
+						dialog.composerList.urls = items[0].path
+						
+						dialog.open()
 			}
 		}
 		
@@ -196,7 +250,6 @@ Maui.Page
 				dialogLoader.sourceComponent = renameDialogComponent
 				dialog.open()
 			}
-			
 		}
 		
 		//        onSaveToClicked:
@@ -217,19 +270,33 @@ Maui.Page
 		onRemoveClicked:
 		{
 			dialogLoader.sourceComponent= removeDialogComponent
-			dialog.paths = paths
+			dialog.items = items
 			dialog.open()
 		}
 		
 		onShareClicked:
 		{
-			// 			if(isAndroid)
-			// 				Maui.Android.shareDialog(paths)
-			// 				else
-			// 				{
-			// 					dialogLoader.sourceComponent= shareDialogComponent
-			// 					dialog.show(paths)
-			// 				}
+			
+			if(items.length)
+			{
+				if(isAndroid)
+				{
+// 					if(items.length > 1 && control.selectionBar)			
+// 						Maui.Android.shareDialog(control.selectionBar.selectedPaths)		
+// 					else  
+						Maui.Android.shareDialog(items[0].path)
+				}
+				else
+				{
+					dialogLoader.sourceComponent= shareDialogComponent
+					if(items.length > 1 && control.selectionBar)			
+						dialog.show(control.selectionBar.selectedPath)		
+					else  
+						dialog.show([items[0].path])
+					
+					dialog.open()
+				}
+			}
 		}
 	}
 	
@@ -576,6 +643,17 @@ Maui.Page
 			Layout.bottomMargin: contentMargins*2
 			z: holder.z +1
 		}
+		
+		
+		ProgressBar
+		{
+			id: _progressBar
+			Layout.fillWidth: true
+			Layout.alignment: Qt.AlignBottom
+			height: iconSizes.medium
+			visible: value > 0
+		}
+		
 	}
 	
 	onThumbnailsSizeChanged:
@@ -747,10 +825,10 @@ Maui.Page
 					clearSelection()
 	}
 	
-	function remove(paths)
+	function remove(items)
 	{
-		for(var i in paths)
-			Maui.FM.removeFile(paths[i])
+		for(var i in items)
+			Maui.FM.removeFile(items[i].path)
 	}
 	
 	
